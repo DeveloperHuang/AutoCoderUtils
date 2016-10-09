@@ -14,6 +14,7 @@ public class SwingConsole {
                 frame.setSize(width,height);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.pack();
+                frame.setLocationRelativeTo(frame.getRootPane());//设置居中
                 frame.setVisible(true);
             }
         });
