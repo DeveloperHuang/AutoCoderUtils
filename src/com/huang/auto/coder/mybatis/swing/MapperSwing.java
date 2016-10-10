@@ -3,8 +3,14 @@ package com.huang.auto.coder.mybatis.swing;
 import com.huang.auto.coder.utils.SwingConsole;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.util.List;
 
 /**
  * Created by huang on 2016/10/6.
@@ -66,10 +72,29 @@ public class MapperSwing {
     private JPanel seletePanel;
     private JPanel updatePanel;
     private JPanel deletePanel;
+    private SQLPanel sqlPanel;
+
+    private String[] params = new String[]{"id","name","message"};
 
     public MapperSwing() {
+        sqlPanel = new SQLPanel();
+        JPanel jpanel = sqlPanel.getMethodManagerPanel();
+        System.out.println(jpanel);
+
 //        MenuPanel.men
+        SQLTabbedPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JPanel parameterPanel = sqlPanel.getParameterPanel();
+                parameterPanel.removeAll();
+
+                JPanel seletePanel = (JPanel) SQLTabbedPane.getSelectedComponent();
+
+
+            }
+        });
     }
+
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("MapperSwing");
