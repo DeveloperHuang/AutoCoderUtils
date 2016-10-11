@@ -1,10 +1,7 @@
 package com.huang.auto.coder.bean.swing;
 
 import com.huang.auto.coder.bean.service.JavaBeanTransverter;
-import com.huang.auto.coder.utils.DataBaseTableUtils;
-import com.huang.auto.coder.utils.DialogMessageUtils;
-import com.huang.auto.coder.utils.SwingConsole;
-import com.huang.auto.coder.utils.Table;
+import com.huang.auto.coder.utils.*;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -146,27 +143,41 @@ public class BeanSwing extends JFrame{
         }
     }
 
+    FileChooseUtils fileChooseUtils ;
 
     class ChooseLocalButtonListener implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(fileChooser == null){
+            if(fileChooser == null ){
                 fileChooser = new JFileChooser();
+
             }
-            if(lastDirectory != null){
-                fileChooser.setCurrentDirectory(lastDirectory);
+            if(fileChooseUtils == null ){
+                fileChooseUtils = new FileChooseUtils();
             }
+
+//            if(lastDirectory != null){
+//                fileChooser.setCurrentDirectory(lastDirectory);
+//            }
+//            String className = classNameTextField.getText();
+//            fileChooser.setSelectedFile(new File(className+".java"));
+//            int option = fileChooser.showSaveDialog(BeanSwing.this);
+//            if(option == JFileChooser.APPROVE_OPTION){
+//                File file = fileChooser.getCurrentDirectory();
+//                localUrlTextField.setText(file.getAbsolutePath());
+//            }else if(option == JFileChooser.CANCEL_OPTION){
+//            }
+
+
+
             String className = classNameTextField.getText();
-            fileChooser.setSelectedFile(new File(className+".java"));
-            int option = fileChooser.showSaveDialog(BeanSwing.this);
-            if(option == JFileChooser.APPROVE_OPTION){
-                File file = fileChooser.getCurrentDirectory();
+            File file = fileChooseUtils.saveFile(BeanSwing.this,chooseLocalButton,className+".java");
+            if(file != null){
                 localUrlTextField.setText(file.getAbsolutePath());
-            }else if(option == JFileChooser.CANCEL_OPTION){
             }
             //存储上次打开的地址
-            lastDirectory = fileChooser.getCurrentDirectory();
+//            lastDirectory = fileChooser.getCurrentDirectory();
         }
     }
 

@@ -8,7 +8,6 @@ import com.huang.auto.coder.utils.Table;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
@@ -19,9 +18,9 @@ public class MapperSwing {
     private JTextField addressTextField;
     private JTextField usernameTextField;
     private JTextField passwordTextField;
-    private JComboBox chhooseDataBaseComboBox;
+    private JComboBox chooseDataBaseComboBox;
     private JComboBox chooseTableComboBox;
-    private JTextField beanFileNameTextField;
+    private JTextField beanFilePathTextField;
     private JButton chooseBeanButton;
     private JTextField mapperSaveLocalTextField;
     private JButton chooseMapperSaveLocalButton;
@@ -103,8 +102,13 @@ public class MapperSwing {
         resetMethodManagerPanel();
 //        MenuPanel.men
         SQLTabbedPane.addChangeListener(new SQLTabbedPaneChangeListener());
+        connectButton.addActionListener(new ConnectButtionListener());
+        chooseDataBaseComboBox.addItemListener(new DataBaseComboBoxItemStateListener());
+        chooseTableComboBox.addItemListener(new TableComboBoxItemStateListener());
 
     }
+
+    //######################### 页面操作 #############################################
 
     /**
      * 重新设置方法管理页面
@@ -139,11 +143,37 @@ public class MapperSwing {
         }
     }
 
+    public void setDataBaseComboBox(List<String> dataBases){
+        chooseDataBaseComboBox.removeAllItems();
+        for(String dataBase : dataBases){
+            chooseDataBaseComboBox.addItem(dataBase);
+        }
+    }
+
+    public void setTableComboBox(List<String> tables){
+        chooseTableComboBox.removeAllItems();
+        for(String table : tables){
+            chooseTableComboBox.addItem(table);
+        }
+    }
+
+    public void setBeanFilePathFieldText(String filePath){
+        beanFilePathTextField.setText(filePath);
+    }
+
     public void sendDialogMessage(String message){
         DialogMessageUtils.sendMessage(this.mainPanel,message);
     }
 
+    //######################### 逻辑 #############################################
 
+
+    //######################### 监听器 #############################################
+
+    /**
+     * 1：建立连接
+     * 2：加载数据库
+     */
     class ConnectButtionListener implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -153,6 +183,8 @@ public class MapperSwing {
             dataBaseTableUtils = new DataBaseTableUtils(address,username,password);
             if(dataBaseTableUtils.isConnectSuccessFlag()){
                 sendDialogMessage("连接成功：");
+                List<String> dataBases = dataBaseTableUtils.loadAllDataBase();
+                setDataBaseComboBox(dataBases);
             }else{
                 sendDialogMessage("连接失败：");
             }
@@ -166,9 +198,10 @@ public class MapperSwing {
             //如果选中表，则重新生成Bean Class 字符串
             if(e.getStateChange() == ItemEvent.SELECTED){
                 String tableName = e.getItem().toString();
-                String dataBaseName = chhooseDataBaseComboBox.getSelectedItem().toString();
+                String dataBaseName = chooseDataBaseComboBox.getSelectedItem().toString();
                 table = dataBaseTableUtils.loadTableInfomation(dataBaseName,tableName);
                 //TODO 如果存在上次的Bean目录，则搜索该目录的Bean文件
+                setBeanFilePathFieldText(tableName+".java");
             }
         }
     }
@@ -181,7 +214,7 @@ public class MapperSwing {
             if(e.getStateChange() == ItemEvent.SELECTED){
                 String dataBaseName = e.getItem().toString();
                 List<String> tables = dataBaseTableUtils.loadAllTables(dataBaseName);
-                //TODO resetTableItems
+                setTableComboBox(tables);
             }
 
         }

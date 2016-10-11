@@ -90,7 +90,7 @@
               <text value="选择数据库："/>
             </properties>
           </component>
-          <component id="9c488" class="javax.swing.JComboBox" binding="chhooseDataBaseComboBox">
+          <component id="9c488" class="javax.swing.JComboBox" binding="chooseDataBaseComboBox">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="100" height="30"/>
@@ -122,7 +122,7 @@
               <text value="选择Bean Class："/>
             </properties>
           </component>
-          <component id="65120" class="javax.swing.JTextField" binding="beanFileNameTextField">
+          <component id="65120" class="javax.swing.JTextField" binding="beanFilePathTextField">
             <constraints>
               <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="30"/>
