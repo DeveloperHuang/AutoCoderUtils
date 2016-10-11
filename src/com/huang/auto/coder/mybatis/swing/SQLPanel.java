@@ -16,6 +16,11 @@ public class SQLPanel {
     private JPanel parameterPanel;
     private JPanel wherePanel;
 
+    public SQLPanel() {
+
+
+    }
+
     public JButton getSaveAllButton() {
         return saveAllButton;
     }

@@ -1,15 +1,15 @@
 package com.huang.auto.coder.mybatis.swing;
 
+import com.huang.auto.coder.utils.DataBaseTableUtils;
+import com.huang.auto.coder.utils.DialogMessageUtils;
 import com.huang.auto.coder.utils.SwingConsole;
+import com.huang.auto.coder.utils.Table;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.*;
 import java.util.List;
 
 /**
@@ -69,32 +69,131 @@ public class MapperSwing {
     private JButton connectButton;
     private JTabbedPane SQLTabbedPane;
     private JPanel insertPanel;
-    private JPanel seletePanel;
+    private JPanel selectPanel;
     private JPanel updatePanel;
     private JPanel deletePanel;
     private SQLPanel sqlPanel;
 
-    private String[] params = new String[]{"id","name","message"};
+    private String[] params = new String[]{"id","name","message","value","time","type","ip","energy","phone","flag"};
+    private DataBaseTableUtils dataBaseTableUtils;
+    private Table table;
+
+    /*
+     * 1：建立连接
+     * 2：选择数据库和表
+     * 3：选择Bean文件
+     * 4：选择Mapper路径
+     *  4.1 自动生成className（tableName+Mapper），package（搜索路径根地址（src））
+     *  4.2 选择生成Test路径，自动生成className（tableName+Mapper+Test），package（搜索路径根地址（test、src））
+     *  4.3 保留上次的Mapper路径，下次选择时直接打开该路径
+     * 5：选择Service路径
+     *  5.1 自动生成className（tableName+Service），package（搜索路径根地址（src））
+     *  5.2 选择生成Test路径，自动生成className（tableName+ServiceImpl+Test），package（搜索路径根地址（test、src））
+     *  5.3 保留上次的Mapper路径，下次选择时直接打开该路径
+     * 6：设置添加方法列表
+     *  6.1：生成默认的添加列表（CRUD）
+     *  6.2：编辑列表
+     * 7：保存Mapper和Test
+     * 8：保存Service和Test
+     *
+     */
 
     public MapperSwing() {
         sqlPanel = new SQLPanel();
-        JPanel jpanel = sqlPanel.getMethodManagerPanel();
-        System.out.println(jpanel);
-
+        resetMethodManagerPanel();
 //        MenuPanel.men
-        SQLTabbedPane.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                JPanel parameterPanel = sqlPanel.getParameterPanel();
-                parameterPanel.removeAll();
+        SQLTabbedPane.addChangeListener(new SQLTabbedPaneChangeListener());
 
-                JPanel seletePanel = (JPanel) SQLTabbedPane.getSelectedComponent();
-
-
-            }
-        });
     }
 
+    /**
+     * 重新设置方法管理页面
+     */
+    public void resetMethodManagerPanel(){
+        JPanel managerPanel = sqlPanel.getMethodManagerPanel();
+        JPanel paramPanel = sqlPanel.getParameterPanel();
+        JPanel methodListPanel = sqlPanel.getMethodListPanel();
+        JPanel wherePanel = sqlPanel.getWherePanel();
+
+        JPanel selectedComponent = (JPanel) SQLTabbedPane.getSelectedComponent();
+        if(selectedComponent == null){
+            return;
+        }
+        //添加的同时会自动删除所属父级
+        selectedComponent.add(managerPanel);
+        paramPanel.removeAll();
+        for(String name : params){
+            paramPanel.add(new JCheckBox(name));
+            wherePanel.add(new JCheckBox(name));
+        }
+
+//        methodListPanel.removeAll();
+        if(insertPanel == selectedComponent){
+            methodListPanel.add(new JLabel("INSERT"));
+        }else if(updatePanel == selectedComponent){
+            methodListPanel.add(new JLabel("UPDATE"));
+        }else if(deletePanel == selectedComponent){
+            methodListPanel.add(new JLabel("DELETE"));
+        }else if(selectPanel == selectedComponent){
+            methodListPanel.add(new JLabel("SELECT"));
+        }
+    }
+
+    public void sendDialogMessage(String message){
+        DialogMessageUtils.sendMessage(this.mainPanel,message);
+    }
+
+
+    class ConnectButtionListener implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String address = addressTextField.getText();
+            String username = usernameTextField.getText();
+            String password = passwordTextField.getText();
+            dataBaseTableUtils = new DataBaseTableUtils(address,username,password);
+            if(dataBaseTableUtils.isConnectSuccessFlag()){
+                sendDialogMessage("连接成功：");
+            }else{
+                sendDialogMessage("连接失败：");
+            }
+        }
+    }
+
+    class TableComboBoxItemStateListener implements ItemListener{
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            //如果选中表，则重新生成Bean Class 字符串
+            if(e.getStateChange() == ItemEvent.SELECTED){
+                String tableName = e.getItem().toString();
+                String dataBaseName = chhooseDataBaseComboBox.getSelectedItem().toString();
+                table = dataBaseTableUtils.loadTableInfomation(dataBaseName,tableName);
+                //TODO 如果存在上次的Bean目录，则搜索该目录的Bean文件
+            }
+        }
+    }
+
+    class DataBaseComboBoxItemStateListener implements ItemListener{
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            //如果选中数据库，则重新加载表
+            if(e.getStateChange() == ItemEvent.SELECTED){
+                String dataBaseName = e.getItem().toString();
+                List<String> tables = dataBaseTableUtils.loadAllTables(dataBaseName);
+                //TODO resetTableItems
+            }
+
+        }
+    }
+
+    class SQLTabbedPaneChangeListener implements ChangeListener{
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            resetMethodManagerPanel();
+        }
+    }
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("MapperSwing");

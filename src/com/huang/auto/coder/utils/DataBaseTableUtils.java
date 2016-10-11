@@ -7,6 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by huang on 2016/10/3.
@@ -16,6 +20,9 @@ public class DataBaseTableUtils {
     private Connection connection;
     private final String DATABASE_NAME = "information_schema";
     private boolean connectSuccessFlag = false;
+    private boolean refreshing = false;
+    private List<String> dataBases = new CopyOnWriteArrayList<>();
+    private Map<String,List<String>> tablesMap = new ConcurrentHashMap<>();
 
     public DataBaseTableUtils() {
         String address = PropertiesUtils.getPropertiesValue("localhost","db");
@@ -28,10 +35,29 @@ public class DataBaseTableUtils {
         resetConnect(address,username,password);
     }
 
+    public synchronized void refreshCache(){
+        if(!refreshing){
+            refreshing = true;
+        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                dataBases = loadAllDataBase();
+                tablesMap.clear();
+                for(String dataBase : dataBases){
+                    tablesMap.put(dataBase,loadAllTables(dataBase));
+                }
+                refreshing = false;
+            }
+        }).start();
+    }
+
     public boolean resetConnect(String address,String username,String password){
         try {
             connection = JDBCUtils.getConnection(address,username,password,DATABASE_NAME);
             connectSuccessFlag = true;
+            refreshCache();
             return true;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -48,34 +74,52 @@ public class DataBaseTableUtils {
     }
 
     public List<String> loadAllDataBase(){
-        try {
-            String sql = "SELECT SCHEMA_NAME FROM SCHEMATA";
-            PreparedStatement preparedStatement = connection
-                    .prepareStatement(sql);
-            ResultSet rs = preparedStatement.executeQuery();
-            List<String> dataBases = new ArrayList<String>();
-            while(rs.next()){
-                String dataBaseName = rs.getString("SCHEMA_NAME");
-                if(!dataBaseName.contains("_schema")){
-                    dataBases.add(dataBaseName);
-                }
-            }
+        if(!refreshing && dataBases.size() > 0){
             return dataBases;
-        } catch (SQLException e) {
-            e.printStackTrace();
+        }else{
+            try {
+                String sql = "SELECT SCHEMA_NAME FROM SCHEMATA";
+                PreparedStatement preparedStatement = connection
+                        .prepareStatement(sql);
+                ResultSet rs = preparedStatement.executeQuery();
+                List<String> dataBases = new ArrayList<String>();
+                while(rs.next()){
+                    String dataBaseName = rs.getString("SCHEMA_NAME");
+                    if(!dataBaseName.contains("_schema")){
+                        dataBases.add(dataBaseName);
+                    }
+                }
+                return dataBases;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
-        return null;
     }
 
     public List<String> loadAllTables(){
-        String sql = "SELECT TABLE_NAME FROM TABLES";
-        return loadAllTablesBySQL(sql);
+        if(!refreshing && tablesMap.size() > 0){
+            Set<String> keys = tablesMap.keySet();
+            List<String> tables = new ArrayList<>();
+            for(String key : keys){
+                tables.addAll(tablesMap.get(key));
+            }
+            return tables;
+        }else {
+            String sql = "SELECT TABLE_NAME FROM TABLES";
+            return loadAllTablesBySQL(sql);
+        }
     }
 
 
     public  List<String> loadAllTables(String dataBaseName){
-        String sql = "SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = '"+dataBaseName+"'";
-        return loadAllTablesBySQL(sql);
+        if(!refreshing && tablesMap.containsKey(dataBaseName)){
+            List<String> tables = tablesMap.get(dataBaseName);
+            return tables;
+        }else {
+            String sql = "SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = '"+dataBaseName+"'";
+            return loadAllTablesBySQL(sql);
+        }
     }
 
     private List<String> loadAllTablesBySQL(String sql){

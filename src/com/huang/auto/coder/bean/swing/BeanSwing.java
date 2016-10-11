@@ -1,7 +1,10 @@
 package com.huang.auto.coder.bean.swing;
 
-import com.huang.auto.coder.bean.service.SwingMessageFillService;
+import com.huang.auto.coder.bean.service.JavaBeanTransverter;
+import com.huang.auto.coder.utils.DataBaseTableUtils;
+import com.huang.auto.coder.utils.DialogMessageUtils;
 import com.huang.auto.coder.utils.SwingConsole;
+import com.huang.auto.coder.utils.Table;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -47,29 +50,54 @@ public class BeanSwing extends JFrame{
     private JComboBox<String> chooseDataBaseComboBox;
     private JLabel chooseDataBaseLabel;
     private JButton refreshBeanText;
-    private JLabel dialogMessage;
+
     private JFileChooser fileChooser ;
     private File lastDirectory;
-
-    private SwingMessageFillService drawService;
-
+    private DataBaseTableUtils dataBaseTableUtils;
 
     public BeanSwing(){
-        drawService = new SwingMessageFillService(this);
-//        setFileChooser();
-//        chooseTableComboBox
         chooseLocalButton.addActionListener(new ChooseLocalButtonListener());
-        chooseDataBaseComboBox.addItemListener(new DataBaseComboBoxItemSteteListener());
-        chooseTableComboBox.addItemListener(new TableComboBoxItemSteteListener());
+        chooseDataBaseComboBox.addItemListener(new DataBaseComboBoxItemStateListener());
+        chooseTableComboBox.addItemListener(new TableComboBoxItemStateListener());
         connectButtion.addActionListener(new ConnectButtionListener());
         refreshBeanText.addActionListener(new RefreshTextButtonListener());
     }
 
-    public void setFileChooser(){
-    }
 
     private String[] tableNames = new String[]{"device","user","id"};
 
+    public void tryConnect(String address,String username,String password){
+        dataBaseTableUtils = new DataBaseTableUtils(address,username,password);
+        if(dataBaseTableUtils.isConnectSuccessFlag()){
+            showDialogMessage("连接成功：");
+            fillDataBaseComBoBoxFromDataBase();
+        }else{
+            //提示连接失败
+            showDialogMessage("连接失败：");
+        }
+    }
+
+    /**
+     * 加载所有的数据库名称，并填充到数据库选项中
+     */
+    public void fillDataBaseComBoBoxFromDataBase(){
+        List<String> dataBases = dataBaseTableUtils.loadAllDataBase();
+        resetDataBaseComboBox(dataBases);
+    }
+
+    /**
+     * 加载所有的数据表，并填充到数据表的选项中
+     */
+    public void fillTableComboBoxFromDataBase(String dataBaseName){
+        List<String> tableNames = dataBaseTableUtils.loadAllTables(dataBaseName);
+        resetTableComboBox(tableNames);
+    }
+
+    public void fillBeanTextAreaFromDataBase(String packageMessage,String className,String dataBaseName,String tableName){
+        Table table = dataBaseTableUtils.loadTableInfomation(dataBaseName,tableName);
+        String message = JavaBeanTransverter.transverterBeanClassString(packageMessage,className,table);
+        rewriteBeanText(message);
+    }
 
     /**
      * 重新设置DataBase下拉框中的内容
@@ -102,19 +130,8 @@ public class BeanSwing extends JFrame{
         BeanTextArea.setText(beanText);
     }
 
-    public void resetDialogMessage(String message){
-        dialogMessage.setText(message);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(3000);
-                    dialogMessage.setText("");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+    public void showDialogMessage(String message){
+        DialogMessageUtils.sendMessage(this.mainPanel,message);
     }
 
 
@@ -125,7 +142,7 @@ public class BeanSwing extends JFrame{
             String address = addressField.getText();
             String userName = usernameField.getText();
             String password = passwordField.getText();
-            drawService.tryConnect(address,userName,password);
+            tryConnect(address,userName,password);
         }
     }
 
@@ -153,7 +170,7 @@ public class BeanSwing extends JFrame{
         }
     }
 
-    class TableComboBoxItemSteteListener implements ItemListener{
+    class TableComboBoxItemStateListener implements ItemListener{
 
         @Override
         public void itemStateChanged(ItemEvent e) {
@@ -169,19 +186,19 @@ public class BeanSwing extends JFrame{
                 classNameTextField.setText(className);
                 String packageMessage = packageTextField.getText();
                 String dataBaseName = chooseDataBaseComboBox.getSelectedItem().toString();
-                drawService.fillBeanTextAreaFromDataBase(packageMessage,className,dataBaseName,tableName);
+                fillBeanTextAreaFromDataBase(packageMessage,className,dataBaseName,tableName);
             }
         }
     }
 
-    class DataBaseComboBoxItemSteteListener implements ItemListener{
+    class DataBaseComboBoxItemStateListener implements ItemListener{
 
         @Override
         public void itemStateChanged(ItemEvent e) {
             //如果选中数据库，则重新加载表
             if(e.getStateChange() == ItemEvent.SELECTED){
                 String dataBaseName = chooseDataBaseComboBox.getSelectedItem().toString();
-                drawService.fillTableComboBoxFromDataBase(dataBaseName);
+                fillTableComboBoxFromDataBase(dataBaseName);
             }
 
         }
@@ -195,7 +212,7 @@ public class BeanSwing extends JFrame{
             String dataBaseName = chooseDataBaseComboBox.getSelectedItem().toString();
             String className = classNameTextField.getText();
             String tableName = chooseTableComboBox.getSelectedItem().toString();
-            drawService.fillBeanTextAreaFromDataBase(packageMessage,className,dataBaseName,tableName);
+            fillBeanTextAreaFromDataBase(packageMessage,className,dataBaseName,tableName);
         }
     }
 
