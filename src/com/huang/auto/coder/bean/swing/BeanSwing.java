@@ -48,8 +48,7 @@ public class BeanSwing extends JFrame{
     private JLabel chooseDataBaseLabel;
     private JButton refreshBeanText;
 
-    private JFileChooser fileChooser ;
-    private File lastDirectory;
+    private FileChooseUtils fileChooseUtils ;
     private DataBaseTableUtils dataBaseTableUtils;
 
     public BeanSwing(){
@@ -143,41 +142,19 @@ public class BeanSwing extends JFrame{
         }
     }
 
-    FileChooseUtils fileChooseUtils ;
+
 
     class ChooseLocalButtonListener implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(fileChooser == null ){
-                fileChooser = new JFileChooser();
-
-            }
             if(fileChooseUtils == null ){
                 fileChooseUtils = new FileChooseUtils();
             }
-
-//            if(lastDirectory != null){
-//                fileChooser.setCurrentDirectory(lastDirectory);
-//            }
-//            String className = classNameTextField.getText();
-//            fileChooser.setSelectedFile(new File(className+".java"));
-//            int option = fileChooser.showSaveDialog(BeanSwing.this);
-//            if(option == JFileChooser.APPROVE_OPTION){
-//                File file = fileChooser.getCurrentDirectory();
-//                localUrlTextField.setText(file.getAbsolutePath());
-//            }else if(option == JFileChooser.CANCEL_OPTION){
-//            }
-
-
-
-            String className = classNameTextField.getText();
-            File file = fileChooseUtils.saveFile(BeanSwing.this,chooseLocalButton,className+".java");
+            File file = fileChooseUtils.saveDirectory(BeanSwing.this,chooseLocalButton);
             if(file != null){
-                localUrlTextField.setText(file.getAbsolutePath());
+                localUrlTextField.setText(file.getPath());
             }
-            //存储上次打开的地址
-//            lastDirectory = fileChooser.getCurrentDirectory();
         }
     }
 
@@ -188,12 +165,7 @@ public class BeanSwing extends JFrame{
             //如果选中表，则重新生成Bean Class 字符串
             if(e.getStateChange() == ItemEvent.SELECTED){
                 String tableName = e.getItem().toString();
-                String className;
-                if(tableName.length() > 1){
-                    className = tableName.substring(0,1).toUpperCase()+tableName.substring(1);
-                }else{
-                    className = tableName.toUpperCase();
-                }
+                String className = StringTransverter.initialUpperCaseTransvert(tableName);
                 classNameTextField.setText(className);
                 String packageMessage = packageTextField.getText();
                 String dataBaseName = chooseDataBaseComboBox.getSelectedItem().toString();

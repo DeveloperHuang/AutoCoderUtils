@@ -14,6 +14,12 @@ public class FileChooseUtils {
     public Map<Object,File> lastOpenDirectoryMap = new HashMap<Object,File>();
     public Map<Object,File> lastSaveDirectoryMap = new HashMap<Object,File>();
 
+    /**
+     * 选择文件
+     * @param parentPanel 所属Panel
+     * @param belongObject 所属对象，用于标识记录上次打开的路径
+     * @return 选中的文件
+     */
     public File selectedFile(Component parentPanel,Object belongObject){
         File currentDirectory = null;
         if(lastOpenDirectoryMap.containsKey(belongObject)){
@@ -22,6 +28,13 @@ public class FileChooseUtils {
         return selectedFile(parentPanel,belongObject,currentDirectory);
     }
 
+    /**
+     * 选择文件
+     * @param parentPanel 所属Panel
+     * @param belongObject 所属对象，用于标识记录上次打开的路径
+     * @param currentDirectory 默认打开的目录
+     * @return 选中的文件
+     */
     public File selectedFile(Component parentPanel,Object belongObject,File currentDirectory){
 
         JFileChooser fileChooser = new JFileChooser();
@@ -37,30 +50,76 @@ public class FileChooseUtils {
         return null;
     }
 
-    public File saveFile(Component parentPanel,Object belongObject){
-        return saveFile(parentPanel,belongObject,"");
+    /**
+     * 选择目录
+     * @param parentPanel 所属Panel
+     * @param belongObject 所属对象，用于标识记录上次打开的路径
+     * @return 选中的目录
+     */
+    public File selectedDirectory(Component parentPanel,Object belongObject){
+        File currentDirectory = null;
+        if(lastOpenDirectoryMap.containsKey(belongObject)){
+            currentDirectory = lastOpenDirectoryMap.get(belongObject);
+        }
+        return selectedDirectory(parentPanel,belongObject,currentDirectory);
     }
 
-    public File saveFile(Component parentPanel,Object belongObject,String savaFileName){
+    /**
+     * 选择目录
+     * @param parentPanel 所属Panel
+     * @param belongObject 所属对象，用于标识记录上次打开的路径
+     * @param currentDirectory 默认打开的目录
+     * @return 选中的目录
+     */
+    public File selectedDirectory(Component parentPanel,Object belongObject,File currentDirectory){
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if(currentDirectory != null){
+            fileChooser.setCurrentDirectory(currentDirectory);
+        }
+        int option = fileChooser.showOpenDialog(parentPanel);
+        if(option == JFileChooser.APPROVE_OPTION){
+            File file = fileChooser.getCurrentDirectory();
+            lastOpenDirectoryMap.put(belongObject,file);
+            return file;
+        }
+        return null;
+    }
+
+
+    /**
+     * 打开目录选择器，获取保存的目录。获取待保存的目录
+     * @param parentPanel 所属Panel
+     * @param belongObject 所属对象，用于标识记录上次打开的路径
+     * @return 选择的目录
+     */
+    public File saveDirectory(Component parentPanel, Object belongObject){
         File currentDirectory = null;
         if(lastSaveDirectoryMap.containsKey(belongObject)){
             currentDirectory = lastSaveDirectoryMap.get(belongObject);
         }
-        return saveFile(parentPanel,belongObject,currentDirectory,savaFileName);
+        return saveDirectory(parentPanel,belongObject,currentDirectory);
     }
-
-    public File saveFile(Component parentPanel, Object belongObject, File currentDirectory, String saveFileName){
+    /**
+     * 打开目录选择器，获取保存的目录。获取待保存的目录
+     * @param parentPanel 所属Panel
+     * @param belongObject 所属对象，用于标识记录上次打开的路径
+     * @param currentDirectory 默认打开路径
+     * @return 选择的目录
+     */
+    public File saveDirectory(Component parentPanel, Object belongObject, File currentDirectory){
 
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setSelectedFile(new File(saveFileName));
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if(currentDirectory != null){
             fileChooser.setCurrentDirectory(currentDirectory);
         }
         int option = fileChooser.showSaveDialog(parentPanel);
         if(option == JFileChooser.APPROVE_OPTION){
-            File file = fileChooser.getCurrentDirectory();
-            lastSaveDirectoryMap.put(belongObject,file);
-            return file;
+            File directory = fileChooser.getCurrentDirectory();
+            lastSaveDirectoryMap.put(belongObject,directory);
+            return fileChooser.getSelectedFile();
         }
         return null;
     }

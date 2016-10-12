@@ -1,14 +1,12 @@
 package com.huang.auto.coder.mybatis.swing;
 
-import com.huang.auto.coder.utils.DataBaseTableUtils;
-import com.huang.auto.coder.utils.DialogMessageUtils;
-import com.huang.auto.coder.utils.SwingConsole;
-import com.huang.auto.coder.utils.Table;
+import com.huang.auto.coder.utils.*;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.event.*;
+import java.io.File;
 import java.util.List;
 
 /**
@@ -75,6 +73,8 @@ public class MapperSwing {
 
     private String[] params = new String[]{"id","name","message","value","time","type","ip","energy","phone","flag"};
     private DataBaseTableUtils dataBaseTableUtils;
+    private FileChooseUtils fileChooseUtils;
+
     private Table table;
 
     /*
@@ -99,6 +99,7 @@ public class MapperSwing {
 
     public MapperSwing() {
         sqlPanel = new SQLPanel();
+        fileChooseUtils = new FileChooseUtils();
         resetMethodManagerPanel();
 //        MenuPanel.men
         SQLTabbedPane.addChangeListener(new SQLTabbedPaneChangeListener());
@@ -190,6 +191,32 @@ public class MapperSwing {
             }
         }
     }
+
+    class ChooseMapperButtonListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File file = fileChooseUtils.selectedFile(MapperSwing.this.mainPanel,chooseMapperSaveLocalButton);
+            mapperSaveLocalTextField.setText(file.getPath());
+            if(chooseTableComboBox.getSelectedIndex() >= 0){
+                String tableName = (String) chooseTableComboBox.getSelectedItem();
+                String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Mapper";
+
+            }
+        }
+    }
+
+    class ChooseBeanButtonListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File file = fileChooseUtils.selectedFile(MapperSwing.this.mainPanel,chooseBeanButton);
+            lastChooseBeanFile = file;
+            beanFilePathTextField.setText(file.getPath());
+        }
+    }
+
+    private File lastChooseBeanFile ;
 
     class TableComboBoxItemStateListener implements ItemListener{
 
