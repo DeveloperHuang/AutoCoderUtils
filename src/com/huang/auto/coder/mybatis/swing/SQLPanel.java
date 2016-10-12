@@ -15,10 +15,37 @@ public class SQLPanel {
     private JPanel methodManagerPanel;
     private JPanel parameterPanel;
     private JPanel wherePanel;
+    private JList methodList;
+    private JScrollPane methodScrollPane;
+    private DefaultComboBoxModel listItems;
 
     public SQLPanel() {
+        listItems = new DefaultComboBoxModel();
+        methodList.setModel(listItems);
+    }
 
+    public DefaultComboBoxModel getListItems() {
+        return listItems;
+    }
 
+    public void setListItems(DefaultComboBoxModel listItems) {
+        this.listItems = listItems;
+    }
+
+    public JList getMethodList() {
+        return methodList;
+    }
+
+    public void setMethodList(JList methodList) {
+        this.methodList = methodList;
+    }
+
+    public JScrollPane getMethodScrollPane() {
+        return methodScrollPane;
+    }
+
+    public void setMethodScrollPane(JScrollPane methodScrollPane) {
+        this.methodScrollPane = methodScrollPane;
     }
 
     public JButton getSaveAllButton() {

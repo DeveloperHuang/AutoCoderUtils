@@ -6,7 +6,9 @@
       <xy x="20" y="20" width="500" height="400"/>
     </constraints>
     <properties>
+      <autoscrolls value="true"/>
       <background color="-3675986"/>
+      <maximumSize width="1000" height="500"/>
     </properties>
     <border type="none"/>
     <children>
@@ -64,7 +66,19 @@
               <background color="-3086113"/>
             </properties>
             <border type="line" title="方法列表："/>
-            <children/>
+            <children>
+              <scrollpane id="e4564" binding="methodScrollPane">
+                <constraints/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="81d27" class="javax.swing.JList" binding="methodList">
+                    <constraints/>
+                    <properties/>
+                  </component>
+                </children>
+              </scrollpane>
+            </children>
           </grid>
         </children>
       </grid>

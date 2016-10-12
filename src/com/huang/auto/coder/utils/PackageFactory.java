@@ -12,7 +12,13 @@ public class PackageFactory {
     public static final String TEST_PATH = File.separator+"test"+File.separator;
 
     public static String builderJavaPackageByFile(File file){
-        String path = file.getParentFile().getPath();
+        String path;
+        if (file.isDirectory()) {
+            path = file.getPath();
+        }else{
+            path = file.getParentFile().getPath();
+        }
+
         String sourceDir = "";
         if(path.contains(SRC_PATH)){
             sourceDir = SRC_PATH;

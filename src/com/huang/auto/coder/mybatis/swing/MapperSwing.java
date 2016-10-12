@@ -40,7 +40,7 @@ public class MapperSwing {
     private JTextField mapperPackageTextField;
     private JLabel mapperPackageLabel;
     private JButton mapperSaveButton;
-    private JTextField testMapperClassNameFieldText;
+    private JTextField testMapperClassNameTextField;
     private JTextField testMapperPackageTextField;
     private JButton saveTestMapperButton;
     private JLabel testMapperClassNameLabel;
@@ -74,6 +74,7 @@ public class MapperSwing {
     private String[] params = new String[]{"id","name","message","value","time","type","ip","energy","phone","flag"};
     private DataBaseTableUtils dataBaseTableUtils;
     private FileChooseUtils fileChooseUtils;
+    private File lastChooseBeanFile ;
 
     private Table table;
 
@@ -102,11 +103,36 @@ public class MapperSwing {
         fileChooseUtils = new FileChooseUtils();
         resetMethodManagerPanel();
 //        MenuPanel.men
-        SQLTabbedPane.addChangeListener(new SQLTabbedPaneChangeListener());
+        initListener();
+
+        initConfig();
+
+    }
+
+    private void initListener() {
+
+        passwordTextField.addKeyListener(new PasswordKeyAdapter());
         connectButton.addActionListener(new ConnectButtionListener());
         chooseDataBaseComboBox.addItemListener(new DataBaseComboBoxItemStateListener());
         chooseTableComboBox.addItemListener(new TableComboBoxItemStateListener());
 
+        chooseBeanButton.addActionListener(new ChooseBeanButtonListener());
+        chooseMapperSaveLocalButton.addActionListener(new ChooseMapperButtonListener());
+        chooseTestMapperLocalButton.addActionListener(new ChooseTestMapperButtonListener());
+        chooseServiceSaveLocalButton.addActionListener(new ChooseServiceButtonListener());
+        chooseTestServiceLocalButton.addActionListener(new ChooseTestServiceButtonListener());
+
+        SQLTabbedPane.addChangeListener(new SQLTabbedPaneChangeListener());
+    }
+
+    public void initConfig(){
+        String address = PropertiesUtils.getPropertiesValue("address","db");
+        String username = PropertiesUtils.getPropertiesValue("username","db");
+        String password = PropertiesUtils.getPropertiesValue("password","db");
+        addressTextField.setText(address);
+        usernameTextField.setText(username);
+        passwordTextField.setText(password);
+        passwordTextField.addKeyListener(new PasswordKeyAdapter());
     }
 
     //######################### 页面操作 #############################################
@@ -117,7 +143,7 @@ public class MapperSwing {
     public void resetMethodManagerPanel(){
         JPanel managerPanel = sqlPanel.getMethodManagerPanel();
         JPanel paramPanel = sqlPanel.getParameterPanel();
-        JPanel methodListPanel = sqlPanel.getMethodListPanel();
+        DefaultComboBoxModel methodList = sqlPanel.getListItems();
         JPanel wherePanel = sqlPanel.getWherePanel();
 
         JPanel selectedComponent = (JPanel) SQLTabbedPane.getSelectedComponent();
@@ -127,20 +153,21 @@ public class MapperSwing {
         //添加的同时会自动删除所属父级
         selectedComponent.add(managerPanel);
         paramPanel.removeAll();
+        wherePanel.removeAll();
         for(String name : params){
             paramPanel.add(new JCheckBox(name));
             wherePanel.add(new JCheckBox(name));
         }
 
-//        methodListPanel.removeAll();
+//        methodList.removeAllElements();
         if(insertPanel == selectedComponent){
-            methodListPanel.add(new JLabel("INSERT"));
+            methodList.addElement("INSERT");
         }else if(updatePanel == selectedComponent){
-            methodListPanel.add(new JLabel("UPDATE"));
+            methodList.addElement("UPDATE");
         }else if(deletePanel == selectedComponent){
-            methodListPanel.add(new JLabel("DELETE"));
+            methodList.addElement("DELETE");
         }else if(selectPanel == selectedComponent){
-            methodListPanel.add(new JLabel("SELECT"));
+            methodList.addElement("SELECT");
         }
     }
 
@@ -171,6 +198,16 @@ public class MapperSwing {
 
     //######################### 监听器 #############################################
 
+    class PasswordKeyAdapter extends KeyAdapter{
+        @Override
+        public void keyTyped(KeyEvent e) {
+            super.keyTyped(e);
+            if(e.getKeyChar() == KeyEvent.VK_ENTER){
+                connectButton.doClick();
+            }
+        }
+    }
+
     /**
      * 1：建立连接
      * 2：加载数据库
@@ -192,47 +229,6 @@ public class MapperSwing {
         }
     }
 
-    class ChooseMapperButtonListener implements ActionListener{
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            File file = fileChooseUtils.selectedFile(MapperSwing.this.mainPanel,chooseMapperSaveLocalButton);
-            mapperSaveLocalTextField.setText(file.getPath());
-            if(chooseTableComboBox.getSelectedIndex() >= 0){
-                String tableName = (String) chooseTableComboBox.getSelectedItem();
-                String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Mapper";
-
-            }
-        }
-    }
-
-    class ChooseBeanButtonListener implements ActionListener{
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            File file = fileChooseUtils.selectedFile(MapperSwing.this.mainPanel,chooseBeanButton);
-            lastChooseBeanFile = file;
-            beanFilePathTextField.setText(file.getPath());
-        }
-    }
-
-    private File lastChooseBeanFile ;
-
-    class TableComboBoxItemStateListener implements ItemListener{
-
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-            //如果选中表，则重新生成Bean Class 字符串
-            if(e.getStateChange() == ItemEvent.SELECTED){
-                String tableName = e.getItem().toString();
-                String dataBaseName = chooseDataBaseComboBox.getSelectedItem().toString();
-                table = dataBaseTableUtils.loadTableInfomation(dataBaseName,tableName);
-                //TODO 如果存在上次的Bean目录，则搜索该目录的Bean文件
-                setBeanFilePathFieldText(tableName+".java");
-            }
-        }
-    }
-
     class DataBaseComboBoxItemStateListener implements ItemListener{
 
         @Override
@@ -244,6 +240,96 @@ public class MapperSwing {
                 setTableComboBox(tables);
             }
 
+        }
+    }
+
+    class TableComboBoxItemStateListener implements ItemListener{
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            //如果选中表，则重新生成Bean Class 字符串
+            if(e.getStateChange() == ItemEvent.SELECTED){
+                String tableName = e.getItem().toString();
+                String dataBaseName = chooseDataBaseComboBox.getSelectedItem().toString();
+                table = dataBaseTableUtils.loadTableInfomation(dataBaseName,tableName);
+                //TODO 如果存在上次的Bean目录，则搜索该目录的Bean文件
+//                setBeanFilePathFieldText(tableName+".java");
+            }
+        }
+    }
+
+
+    class ChooseBeanButtonListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File file = fileChooseUtils.selectedFile(MapperSwing.this.mainPanel,chooseBeanButton);
+            lastChooseBeanFile = file;
+            beanFilePathTextField.setText(file.getPath());
+        }
+    }
+
+    class ChooseMapperButtonListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File file = fileChooseUtils.saveDirectory(MapperSwing.this.mainPanel,chooseMapperSaveLocalButton);
+            mapperSaveLocalTextField.setText(file.getPath());
+            if(chooseTableComboBox.getSelectedIndex() >= 0){
+                String tableName = (String) chooseTableComboBox.getSelectedItem();
+                String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Mapper";
+                String packageMessage = PackageFactory.builderJavaPackageByFile(file);
+                mapperClassNameTextField.setText(className);
+                mapperPackageTextField.setText(packageMessage);
+            }
+        }
+    }
+
+    class ChooseTestMapperButtonListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File file = fileChooseUtils.saveDirectory(MapperSwing.this.mainPanel,chooseTestMapperLocalButton);
+            testMapperSaveLocalTextField.setText(file.getPath());
+            if(chooseTableComboBox.getSelectedIndex() >= 0){
+                String tableName = (String) chooseTableComboBox.getSelectedItem();
+                String className = StringTransverter.initialUpperCaseTransvert(tableName)+"MapperTest";
+                String packageMessage = PackageFactory.builderJavaPackageByFile(file);
+                testMapperClassNameTextField.setText(className);
+                testMapperPackageTextField.setText(packageMessage);
+            }
+        }
+    }
+
+    class ChooseServiceButtonListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File file = fileChooseUtils.saveDirectory(MapperSwing.this.mainPanel,chooseServiceSaveLocalButton);
+            serviceSaveLocalTextField.setText(file.getPath());
+            if(chooseTableComboBox.getSelectedIndex() >= 0){
+                String tableName = (String) chooseTableComboBox.getSelectedItem();
+                String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Service";
+                String packageMessage = PackageFactory.builderJavaPackageByFile(file);
+                serviceClassNameTextField.setText(className);
+                servicePackageTextField.setText(packageMessage);
+            }
+        }
+    }
+
+    class ChooseTestServiceButtonListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File file = fileChooseUtils.saveDirectory(MapperSwing.this.mainPanel,chooseTestServiceLocalButton);
+            testServiceSaveLocalTextField.setText(file.getPath());
+            if(chooseTableComboBox.getSelectedIndex() >= 0){
+                String tableName = (String) chooseTableComboBox.getSelectedItem();
+                String className = StringTransverter.initialUpperCaseTransvert(tableName)+"ServiceTest";
+                String packageMessage = PackageFactory.builderJavaPackageByFile(file);
+                testServiceClassNameTextField.setText(className);
+                testServicePackageTextField.setText(packageMessage);
+            }
         }
     }
 

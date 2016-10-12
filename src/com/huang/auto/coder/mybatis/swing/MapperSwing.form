@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="941" height="400"/>
+      <xy x="20" y="20" width="1015" height="429"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -244,7 +244,7 @@
               <text value="className："/>
             </properties>
           </component>
-          <component id="277dd" class="javax.swing.JTextField" binding="testMapperClassNameFieldText">
+          <component id="277dd" class="javax.swing.JTextField" binding="testMapperClassNameTextField">
             <constraints>
               <grid row="1" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
@@ -422,14 +422,18 @@
             <preferred-size width="200" height="200"/>
           </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <background color="-15669109"/>
+        </properties>
         <border type="none"/>
         <children>
           <grid id="21c4a" binding="insertPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
             <constraints>
               <tabbedpane title="INSERT"/>
             </constraints>
-            <properties/>
+            <properties>
+              <background color="-3151795"/>
+            </properties>
             <border type="none"/>
             <children/>
           </grid>
@@ -437,7 +441,9 @@
             <constraints>
               <tabbedpane title="SELECT"/>
             </constraints>
-            <properties/>
+            <properties>
+              <background color="-1529280"/>
+            </properties>
             <border type="none"/>
             <children/>
           </grid>
@@ -445,7 +451,9 @@
             <constraints>
               <tabbedpane title="UPDATE"/>
             </constraints>
-            <properties/>
+            <properties>
+              <background color="-1541303"/>
+            </properties>
             <border type="none"/>
             <children/>
           </grid>
@@ -453,7 +461,9 @@
             <constraints>
               <tabbedpane title="DELETE"/>
             </constraints>
-            <properties/>
+            <properties>
+              <background color="-1534861"/>
+            </properties>
             <border type="none"/>
             <children/>
           </grid>

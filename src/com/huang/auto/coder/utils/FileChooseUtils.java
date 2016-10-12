@@ -13,7 +13,7 @@ public class FileChooseUtils {
 
     public Map<Object,File> lastOpenDirectoryMap = new HashMap<Object,File>();
     public Map<Object,File> lastSaveDirectoryMap = new HashMap<Object,File>();
-
+    public File defaultDirectory;
     /**
      * 选择文件
      * @param parentPanel 所属Panel
@@ -40,12 +40,15 @@ public class FileChooseUtils {
         JFileChooser fileChooser = new JFileChooser();
         if(currentDirectory != null){
             fileChooser.setCurrentDirectory(currentDirectory);
+        }else if(defaultDirectory != null){
+            fileChooser.setCurrentDirectory(defaultDirectory);
         }
         int option = fileChooser.showOpenDialog(parentPanel);
         if(option == JFileChooser.APPROVE_OPTION){
-            File file = fileChooser.getCurrentDirectory();
-            lastOpenDirectoryMap.put(belongObject,file);
-            return file;
+            File fileDirectory = fileChooser.getCurrentDirectory();
+            lastOpenDirectoryMap.put(belongObject,fileDirectory);
+            defaultDirectory = fileDirectory;
+            return fileChooser.getSelectedFile();
         }
         return null;
     }
@@ -77,12 +80,15 @@ public class FileChooseUtils {
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if(currentDirectory != null){
             fileChooser.setCurrentDirectory(currentDirectory);
+        }else if(defaultDirectory != null){
+            fileChooser.setCurrentDirectory(defaultDirectory);
         }
         int option = fileChooser.showOpenDialog(parentPanel);
         if(option == JFileChooser.APPROVE_OPTION){
-            File file = fileChooser.getCurrentDirectory();
-            lastOpenDirectoryMap.put(belongObject,file);
-            return file;
+            File directory = fileChooser.getCurrentDirectory();
+            lastOpenDirectoryMap.put(belongObject,directory);
+            defaultDirectory = directory;
+            return fileChooser.getSelectedFile();
         }
         return null;
     }
@@ -114,11 +120,14 @@ public class FileChooseUtils {
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if(currentDirectory != null){
             fileChooser.setCurrentDirectory(currentDirectory);
+        }else if(defaultDirectory != null){
+            fileChooser.setCurrentDirectory(defaultDirectory);
         }
         int option = fileChooser.showSaveDialog(parentPanel);
         if(option == JFileChooser.APPROVE_OPTION){
             File directory = fileChooser.getCurrentDirectory();
             lastSaveDirectoryMap.put(belongObject,directory);
+            defaultDirectory = directory;
             return fileChooser.getSelectedFile();
         }
         return null;
