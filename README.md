@@ -1,0 +1,2 @@
+# AutoCoderUtils
+这个项目用于自动创建JavaBean文件和Spring+MyBatis的项目中的简单逻辑及对应的Service，Test代码。减少新项目，新功能在基础逻辑堆砌上的耗时，解放生产力。
