@@ -56,7 +56,7 @@
           </component>
           <grid id="1a651" binding="methodListPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
             <constraints>
-              <grid row="0" column="1" row-span="4" col-span="2" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+              <grid row="0" column="1" row-span="4" col-span="2" vsize-policy="3" hsize-policy="7" anchor="8" fill="2" indent="0" use-parent-layout="false">
                 <preferred-size width="100" height="100"/>
                 <maximum-size width="200" height="-1"/>
               </grid>
@@ -66,25 +66,13 @@
               <background color="-3086113"/>
             </properties>
             <border type="line" title="方法列表："/>
-            <children>
-              <scrollpane id="e4564" binding="methodScrollPane">
-                <constraints/>
-                <properties/>
-                <border type="none"/>
-                <children>
-                  <component id="81d27" class="javax.swing.JList" binding="methodList">
-                    <constraints/>
-                    <properties/>
-                  </component>
-                </children>
-              </scrollpane>
-            </children>
+            <children/>
           </grid>
         </children>
       </grid>
       <grid id="da293" binding="parameterPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
         <constraints>
-          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="8" fill="2" indent="0" use-parent-layout="false">
             <preferred-size width="100" height="100"/>
             <maximum-size width="300" height="-1"/>
           </grid>
@@ -98,7 +86,7 @@
       </grid>
       <grid id="9a26e" binding="wherePanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
         <constraints>
-          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="8" fill="2" indent="0" use-parent-layout="false">
             <preferred-size width="100" height="100"/>
             <maximum-size width="300" height="-1"/>
           </grid>

@@ -7,7 +7,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.event.*;
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by huang on 2016/10/6.
@@ -75,6 +77,13 @@ public class MapperSwing {
     private DataBaseTableUtils dataBaseTableUtils;
     private FileChooseUtils fileChooseUtils;
     private File lastChooseBeanFile ;
+    //每个方法类型对应方法组
+    private Map<MethodEnum,RadioPanelGroupManager> methodListGroupManagerMap;
+    //每个方法对应的参数组
+    private Map<RadioPanelGroupManager.RadioPanelContainer,CheckBoxPanelGroupManager> parameterListGroupManagerMap;
+    //每个方法对应的条件组
+    private Map<RadioPanelGroupManager.RadioPanelContainer,CheckBoxPanelGroupManager> whereListGroupManagerMap;
+
 
     private Table table;
 
@@ -101,6 +110,10 @@ public class MapperSwing {
     public MapperSwing() {
         sqlPanel = new SQLPanel();
         fileChooseUtils = new FileChooseUtils();
+        methodListGroupManagerMap = new HashMap<MethodEnum, RadioPanelGroupManager>();
+        parameterListGroupManagerMap = new HashMap<RadioPanelGroupManager.RadioPanelContainer, CheckBoxPanelGroupManager>();
+        whereListGroupManagerMap = new HashMap<RadioPanelGroupManager.RadioPanelContainer, CheckBoxPanelGroupManager>();
+
         resetMethodManagerPanel();
 //        MenuPanel.men
         initListener();
@@ -139,36 +152,80 @@ public class MapperSwing {
 
     /**
      * 重新设置方法管理页面
+     * 1:获取该方法组的所有方法Panel
+     * 2：将所有的Panel添加到对应的Panel
+     * 3：获取该方法组选中的方法容器
+     * 4：通过该容器获取所有的参数组和条件组
+     * 5：将参数组和条件组添加到对应的Panel
      */
     public void resetMethodManagerPanel(){
         JPanel managerPanel = sqlPanel.getMethodManagerPanel();
         JPanel paramPanel = sqlPanel.getParameterPanel();
-        DefaultComboBoxModel methodList = sqlPanel.getListItems();
         JPanel wherePanel = sqlPanel.getWherePanel();
+        JPanel methodListPanel = sqlPanel.getMethodListPanel();
 
+        //选中的方法组对象
         JPanel selectedComponent = (JPanel) SQLTabbedPane.getSelectedComponent();
         if(selectedComponent == null){
             return;
         }
         //添加的同时会自动删除所属父级
         selectedComponent.add(managerPanel);
+        //删除所有动态添加的组件
         paramPanel.removeAll();
         wherePanel.removeAll();
-        for(String name : params){
-            paramPanel.add(new JCheckBox(name));
-            wherePanel.add(new JCheckBox(name));
+        methodListPanel.removeAll();
+
+//        1:获取该方法组的所有方法Panel
+        RadioPanelGroupManager currMethodManager;
+        if(insertPanel == selectedComponent){
+            currMethodManager = getMethodRadioGroupManager(MethodEnum.INSERT);
+        }else if(updatePanel == selectedComponent){
+            currMethodManager = getMethodRadioGroupManager(MethodEnum.UPDATE);
+        }else if(deletePanel == selectedComponent){
+            currMethodManager = getMethodRadioGroupManager(MethodEnum.DELETE);
+        }else{
+            //SELECT Panel
+            currMethodManager = getMethodRadioGroupManager(MethodEnum.SELECT);
+        }
+//        2：将所有的Panel添加到对应的Panel
+        List<RadioPanelGroupManager.RadioPanelContainer> currMethodContainerList = currMethodManager.getAllPanelContainer();
+        for(RadioPanelGroupManager.RadioPanelContainer panelContainer : currMethodContainerList){
+            methodListPanel.add(panelContainer.getPanel());
+        }
+//        3：获取该方法组选中的方法容器
+//        4：通过该容器获取所有的参数组和条件组
+//        5：将参数组和条件组添加到对应的Panel
+        RadioPanelGroupManager.RadioPanelContainer selectedMethodContainer = currMethodManager.getSelectedPanelContainer();
+
+        CheckBoxPanelGroupManager parameterGroupManager = parameterListGroupManagerMap.get(selectedMethodContainer);
+        List<CheckBoxPanelGroupManager.CheckBoxPanelContainer> parameterContainerList = parameterGroupManager.getAllPanelContainer();
+        for(CheckBoxPanelGroupManager.CheckBoxPanelContainer paramContainer : parameterContainerList){
+            paramPanel.add(paramContainer.getPanel());
         }
 
-//        methodList.removeAllElements();
-        if(insertPanel == selectedComponent){
-            methodList.addElement("INSERT");
-        }else if(updatePanel == selectedComponent){
-            methodList.addElement("UPDATE");
-        }else if(deletePanel == selectedComponent){
-            methodList.addElement("DELETE");
-        }else if(selectPanel == selectedComponent){
-            methodList.addElement("SELECT");
+        CheckBoxPanelGroupManager whereGroupManager = whereListGroupManagerMap.get(selectedMethodContainer);
+        List<CheckBoxPanelGroupManager.CheckBoxPanelContainer> whereContainerList = whereGroupManager.getAllPanelContainer();
+        for(CheckBoxPanelGroupManager.CheckBoxPanelContainer whereContainer : whereContainerList){
+            wherePanel.add(whereContainer.getPanel());
         }
+
+    }
+
+    /**
+     * 获取或创建MethodGroupManager
+     * @param methodEnum
+     * @return
+     */
+    private RadioPanelGroupManager getMethodRadioGroupManager(MethodEnum methodEnum){
+        RadioPanelGroupManager methodManager;
+        if(methodListGroupManagerMap.containsKey(methodEnum)){
+            methodManager = methodListGroupManagerMap.get(methodEnum);
+        }else{
+            methodManager = new RadioPanelGroupManager();
+            methodListGroupManagerMap.put(methodEnum,methodManager);
+        }
+        return methodManager;
     }
 
     public void setDataBaseComboBox(List<String> dataBases){
@@ -194,6 +251,8 @@ public class MapperSwing {
     }
 
     //######################### 逻辑 #############################################
+
+    //TODO 添加方法：设置SQL页面参数（根据表属性，add按钮，生成参数集和条件集）
 
 
     //######################### 监听器 #############################################
