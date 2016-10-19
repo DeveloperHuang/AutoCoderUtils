@@ -71,9 +71,9 @@ public class MapperSwing {
     private JPanel selectPanel;
     private JPanel updatePanel;
     private JPanel deletePanel;
+
     private SQLPanel sqlPanel;
 
-    private String[] params = new String[]{"id","name","message","value","time","type","ip","energy","phone","flag"};
     private DataBaseTableUtils dataBaseTableUtils;
     private FileChooseUtils fileChooseUtils;
     private File lastChooseBeanFile ;
@@ -84,8 +84,11 @@ public class MapperSwing {
     //每个方法对应的条件组
     private Map<RadioPanelGroupManager.RadioPanelContainer,CheckBoxPanelGroupManager> whereListGroupManagerMap;
 
+    private MethodRadioActionListener radioActionListener = new MethodRadioActionListener();
 
+    //当前表信息
     private Table table;
+    private Map<String,String> columnMap;
 
     /*
      * 1：建立连接
@@ -136,6 +139,10 @@ public class MapperSwing {
         chooseTestServiceLocalButton.addActionListener(new ChooseTestServiceButtonListener());
 
         SQLTabbedPane.addChangeListener(new SQLTabbedPaneChangeListener());
+        JButton addButton = sqlPanel.getAddButton();
+        JButton deleteButton = sqlPanel.getDeleteButton();
+        addButton.addActionListener(new AddButtonActionListener());
+        deleteButton.addActionListener(new DeleteButtonActionListener());
     }
 
     public void initConfig(){
@@ -164,6 +171,7 @@ public class MapperSwing {
         JPanel wherePanel = sqlPanel.getWherePanel();
         JPanel methodListPanel = sqlPanel.getMethodListPanel();
 
+
         //选中的方法组对象
         JPanel selectedComponent = (JPanel) SQLTabbedPane.getSelectedComponent();
         if(selectedComponent == null){
@@ -177,39 +185,64 @@ public class MapperSwing {
         methodListPanel.removeAll();
 
 //        1:获取该方法组的所有方法Panel
-        RadioPanelGroupManager currMethodManager;
-        if(insertPanel == selectedComponent){
-            currMethodManager = getMethodRadioGroupManager(MethodEnum.INSERT);
-        }else if(updatePanel == selectedComponent){
-            currMethodManager = getMethodRadioGroupManager(MethodEnum.UPDATE);
-        }else if(deletePanel == selectedComponent){
-            currMethodManager = getMethodRadioGroupManager(MethodEnum.DELETE);
-        }else{
-            //SELECT Panel
-            currMethodManager = getMethodRadioGroupManager(MethodEnum.SELECT);
+
+        //当前方法组管理者
+        MethodEnum methodEnum = getCurrMethod();
+        RadioPanelGroupManager currMethodManager = getMethodRadioGroupManager(methodEnum);
+        if(currMethodManager == null){
+            currMethodManager = new RadioPanelGroupManager();
+            methodListGroupManagerMap.put(methodEnum,currMethodManager);
         }
-//        2：将所有的Panel添加到对应的Panel
+
+        //所属当前方法的Panel容器集合
         List<RadioPanelGroupManager.RadioPanelContainer> currMethodContainerList = currMethodManager.getAllPanelContainer();
+//        2：将所有的方法集添加到方法列表Panel中
         for(RadioPanelGroupManager.RadioPanelContainer panelContainer : currMethodContainerList){
             methodListPanel.add(panelContainer.getPanel());
         }
 //        3：获取该方法组选中的方法容器
-//        4：通过该容器获取所有的参数组和条件组
-//        5：将参数组和条件组添加到对应的Panel
         RadioPanelGroupManager.RadioPanelContainer selectedMethodContainer = currMethodManager.getSelectedPanelContainer();
 
+        if(selectedMethodContainer == null){
+            return;
+        }
+
+//        4：通过该容器获取所有的参数组和条件组
+//        5：将参数组和条件组添加到对应的Panel
         CheckBoxPanelGroupManager parameterGroupManager = parameterListGroupManagerMap.get(selectedMethodContainer);
-        List<CheckBoxPanelGroupManager.CheckBoxPanelContainer> parameterContainerList = parameterGroupManager.getAllPanelContainer();
-        for(CheckBoxPanelGroupManager.CheckBoxPanelContainer paramContainer : parameterContainerList){
-            paramPanel.add(paramContainer.getPanel());
+        if(parameterGroupManager != null){
+            List<CheckBoxPanelGroupManager.CheckBoxPanelContainer> parameterContainerList = parameterGroupManager.getAllPanelContainer();
+            for(CheckBoxPanelGroupManager.CheckBoxPanelContainer paramContainer : parameterContainerList){
+                paramPanel.add(paramContainer.getPanel());
+            }
         }
 
         CheckBoxPanelGroupManager whereGroupManager = whereListGroupManagerMap.get(selectedMethodContainer);
-        List<CheckBoxPanelGroupManager.CheckBoxPanelContainer> whereContainerList = whereGroupManager.getAllPanelContainer();
-        for(CheckBoxPanelGroupManager.CheckBoxPanelContainer whereContainer : whereContainerList){
-            wherePanel.add(whereContainer.getPanel());
+        if(whereGroupManager != null){
+            List<CheckBoxPanelGroupManager.CheckBoxPanelContainer> whereContainerList = whereGroupManager.getAllPanelContainer();
+            for(CheckBoxPanelGroupManager.CheckBoxPanelContainer whereContainer : whereContainerList){
+                wherePanel.add(whereContainer.getPanel());
+            }
         }
+    }
 
+    /**
+     * 获取当前方法
+     * @return 当前方法对应Enum
+     */
+    public MethodEnum getCurrMethod(){
+        //选中的方法组对象
+        JPanel selectedComponent = (JPanel) SQLTabbedPane.getSelectedComponent();
+        if(insertPanel == selectedComponent){
+            return MethodEnum.INSERT;
+        }else if(updatePanel == selectedComponent){
+            return MethodEnum.UPDATE;
+        }else if(deletePanel == selectedComponent){
+            return MethodEnum.DELETE;
+        }else{
+            //默认是SELECT
+            return MethodEnum.SELECT;
+        }
     }
 
     /**
@@ -252,10 +285,19 @@ public class MapperSwing {
 
     //######################### 逻辑 #############################################
 
-    //TODO 添加方法：设置SQL页面参数（根据表属性，add按钮，生成参数集和条件集）
+    public CheckBoxPanelGroupManager createColumnPanelGroupManager(){
+        CheckBoxPanelGroupManager checkBoxPanelGroupManager = new CheckBoxPanelGroupManager();
+        if(table != null){
+            for(Column column : table.getColumns()){
+                checkBoxPanelGroupManager.creatCheckBoxPanel(new JLabel(column.getFieldName()));
+            }
+        }
+        return checkBoxPanelGroupManager;
+    }
 
 
     //######################### 监听器 #############################################
+
 
     class PasswordKeyAdapter extends KeyAdapter{
         @Override
@@ -311,6 +353,11 @@ public class MapperSwing {
                 String tableName = e.getItem().toString();
                 String dataBaseName = chooseDataBaseComboBox.getSelectedItem().toString();
                 table = dataBaseTableUtils.loadTableInfomation(dataBaseName,tableName);
+                //column快速匹配
+                columnMap.clear();
+                for(Column column : table.getColumns()){
+                    columnMap.put(column.getFieldName(),column.getFieldType());
+                }
                 //TODO 如果存在上次的Bean目录，则搜索该目录的Bean文件
 //                setBeanFilePathFieldText(tableName+".java");
             }
@@ -396,6 +443,55 @@ public class MapperSwing {
 
         @Override
         public void stateChanged(ChangeEvent e) {
+            resetMethodManagerPanel();
+        }
+    }
+
+    class AddButtonActionListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            MethodEnum methodEnum = getCurrMethod();
+            RadioPanelGroupManager currMethodManager = methodListGroupManagerMap.get(methodEnum);
+            RadioPanelGroupManager.RadioPanelContainer radioPanelContainer =
+                    currMethodManager.creatRadionPanel(new JTextField());
+
+            radioPanelContainer.getRadioButton().addActionListener(radioActionListener);
+
+            JPanel methodListPanel = sqlPanel.getMethodListPanel();
+            methodListPanel.add(radioPanelContainer.getPanel());
+
+            //TODO 初始化方法
+            CheckBoxPanelGroupManager paramPanelManager = createColumnPanelGroupManager();
+            CheckBoxPanelGroupManager wherePanelManager = createColumnPanelGroupManager();
+            parameterListGroupManagerMap.put(radioPanelContainer,paramPanelManager);
+            whereListGroupManagerMap.put(radioPanelContainer,wherePanelManager);
+        }
+    }
+
+    class DeleteButtonActionListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            MethodEnum methodEnum = getCurrMethod();
+            RadioPanelGroupManager currMethodManager = methodListGroupManagerMap.remove(methodEnum);
+            if(currMethodManager == null){
+                return ;
+            }
+            RadioPanelGroupManager.RadioPanelContainer currRadioContainer
+                    = currMethodManager.removeSelectedPanelFromGroup();
+            if(currRadioContainer != null){
+                parameterListGroupManagerMap.remove(currRadioContainer);
+                whereListGroupManagerMap.remove(currRadioContainer);
+            }
+            resetMethodManagerPanel();
+        }
+    }
+
+    class MethodRadioActionListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
             resetMethodManagerPanel();
         }
     }

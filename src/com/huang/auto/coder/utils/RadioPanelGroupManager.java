@@ -20,7 +20,7 @@ public class RadioPanelGroupManager {
 
     }
 
-    public JPanel creatRadionPanel(Component component){
+    public RadioPanelContainer creatRadionPanel(Component component){
         JPanel panel = new JPanel(new FlowLayout());
         JRadioButton radioButton = new JRadioButton();
         RadioPanelContainer panelContainer = new RadioPanelContainer(panel,radioButton,component);
@@ -29,7 +29,7 @@ public class RadioPanelGroupManager {
         panelContainerMap.put(radioButton,panelContainer);
         panel.add(radioButton);
         panel.add(component);
-        return panel;
+        return panelContainer;
     }
 
     /**
@@ -69,17 +69,21 @@ public class RadioPanelGroupManager {
     /**
      * @return 返回删除的JPanel， null 没有选中的对象，删除无效
      */
-    public JPanel removeSelectedPanelFromGroup(){
+    public RadioPanelContainer removeSelectedPanelFromGroup(){
         RadioPanelContainer panelContainer = getSelectedPanelContainer();
         if(panelContainer != null){
             panelContainerMap.remove(panelContainer.getRadioButton());
             buttonGroup.remove(panelContainer.getRadioButton());
-            return panelContainer.getPanel();
+            return panelContainer;
         }else{
             return null;
         }
     }
 
+    /**
+     *
+     * @return 返回选中的Radio容器，如果没有，返回null
+     */
     public RadioPanelContainer getSelectedPanelContainer(){
 
         JRadioButton radioButton = null ;
@@ -102,7 +106,7 @@ public class RadioPanelGroupManager {
 
     /**
      *
-     * @return 获取所有的容器
+     * @return 获取所有的容器,如果没有，返回空集合
      */
     public List<RadioPanelContainer> getAllPanelContainer(){
 
@@ -114,6 +118,10 @@ public class RadioPanelGroupManager {
         return allPanelContainer;
     }
 
+    public void clear(){
+        panelContainerMap.clear();
+        buttonGroup = new ButtonGroup();
+    }
 
     public class RadioPanelContainer {
         private JPanel panel;

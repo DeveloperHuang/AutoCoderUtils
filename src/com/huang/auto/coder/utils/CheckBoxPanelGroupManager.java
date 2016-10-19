@@ -27,7 +27,7 @@ public class CheckBoxPanelGroupManager {
      * @param component 组件
      * @return 组装了CheckBox的容器
      */
-    public JPanel creatCheckBoxPanel(Component component){
+    public CheckBoxPanelContainer creatCheckBoxPanel(Component component){
         JPanel panel = new JPanel(new FlowLayout());
         JCheckBox checkBox = new JCheckBox();
         checkBox.addActionListener(selectedListener);
@@ -36,12 +36,12 @@ public class CheckBoxPanelGroupManager {
         panelContainerMap.put(checkBox,panelContainer);
         panel.add(checkBox);
         panel.add(component);
-        return panel;
+        return panelContainer;
     }
 
     /**
      *
-     * @return 返回选中的Panel容器
+     * @return 返回选中的Panel容器,如果没有则返回一个空的集合
      */
     public List<JPanel> getSelectedPanel(){
         List<JPanel> selectedPanel = new ArrayList<JPanel>();
@@ -54,7 +54,7 @@ public class CheckBoxPanelGroupManager {
 
     /**
      *
-     * @return 返回选中的组件
+     * @return 返回选中的组件,如果没有则返回一个空的集合
      */
     public List<Component> getSelectedComponent(){
         List<Component> selectedComponent = new ArrayList<Component>();
@@ -66,7 +66,7 @@ public class CheckBoxPanelGroupManager {
     }
 
     /**
-     * @return 返回选中的checkBox
+     * @return 返回选中的checkBox,如果没有则返回一个空的集合
      */
     public List<JCheckBox> getSelectedCheckBox(){
         List<JCheckBox> selectedCheckBox = new ArrayList<JCheckBox>();
@@ -107,7 +107,7 @@ public class CheckBoxPanelGroupManager {
 
     /**
      *
-     * @return 获取所有的组装后的Panel
+     * @return 获取所有的组装后的Panel,如果没有则返回一个空的集合
      */
     public List<JPanel> getAllPanel(){
         List<JPanel> allPanel = new ArrayList<JPanel>();
@@ -120,7 +120,7 @@ public class CheckBoxPanelGroupManager {
 
     /**
      *
-     * @return 获取所有的组件
+     * @return 获取所有的组件,如果没有则返回一个空的集合
      */
     public List<Component> getAllComponent(){
         List<Component> allComponents = new ArrayList<Component>();
@@ -133,7 +133,7 @@ public class CheckBoxPanelGroupManager {
 
     /**
      *
-     * @return 获取所有的CheckBox
+     * @return 获取所有的CheckBox,如果没有则返回一个空的集合
      */
     public List<JCheckBox> getAllCheckBox(){
         List<JCheckBox> allCheckBox = new ArrayList<JCheckBox>();
@@ -147,7 +147,7 @@ public class CheckBoxPanelGroupManager {
 
     /**
      *
-     * @return 获取所有的容器
+     * @return 获取所有的容器,如果没有则返回一个空的集合
      */
     public List<CheckBoxPanelContainer> getAllPanelContainer(){
         Collection<CheckBoxPanelContainer> checkBoxPanelContainers = panelContainerMap.values();
@@ -170,6 +170,12 @@ public class CheckBoxPanelGroupManager {
                 selectedCheckBoxMap.remove(checkBox);
             }
         }
+    }
+
+    public void clear(){
+        panelContainerMap.clear();
+        selectedCheckBoxMap.clear();
+        selectedListener = new CheckBoxActionListener();
     }
 
     public class CheckBoxPanelContainer {
