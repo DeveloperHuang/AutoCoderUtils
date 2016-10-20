@@ -5,6 +5,7 @@ import com.huang.auto.coder.utils.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.util.HashMap;
@@ -119,9 +120,8 @@ public class MapperSwing {
 
         resetMethodManagerPanel();
 //        MenuPanel.men
-        initListener();
-
         initConfig();
+        initListener();
 
     }
 
@@ -152,7 +152,8 @@ public class MapperSwing {
         addressTextField.setText(address);
         usernameTextField.setText(username);
         passwordTextField.setText(password);
-        passwordTextField.addKeyListener(new PasswordKeyAdapter());
+        columnMap = new HashMap<String, String>();
+
     }
 
     //######################### 页面操作 #############################################
@@ -172,13 +173,14 @@ public class MapperSwing {
         JPanel methodListPanel = sqlPanel.getMethodListPanel();
 
 
+        //TODO SQLPanel 改成弹窗式的方式，看看能否设好样式
         //选中的方法组对象
-        JPanel selectedComponent = (JPanel) SQLTabbedPane.getSelectedComponent();
-        if(selectedComponent == null){
-            return;
-        }
+//        JPanel selectedComponent = (JPanel) SQLTabbedPane.getSelectedComponent();
+//        if(selectedComponent == null){
+//            return;
+//        }
         //添加的同时会自动删除所属父级
-        selectedComponent.add(managerPanel);
+//        selectedComponent.add(managerPanel);
         //删除所有动态添加的组件
         paramPanel.removeAll();
         wherePanel.removeAll();
@@ -204,6 +206,7 @@ public class MapperSwing {
         RadioPanelGroupManager.RadioPanelContainer selectedMethodContainer = currMethodManager.getSelectedPanelContainer();
 
         if(selectedMethodContainer == null){
+//            selectedComponent.updateUI();
             return;
         }
 
@@ -224,6 +227,7 @@ public class MapperSwing {
                 wherePanel.add(whereContainer.getPanel());
             }
         }
+//        selectedComponent.updateUI();
     }
 
     /**
@@ -452,20 +456,27 @@ public class MapperSwing {
         @Override
         public void actionPerformed(ActionEvent e) {
             MethodEnum methodEnum = getCurrMethod();
+            //当前方法管理器
             RadioPanelGroupManager currMethodManager = methodListGroupManagerMap.get(methodEnum);
-            RadioPanelGroupManager.RadioPanelContainer radioPanelContainer =
-                    currMethodManager.creatRadionPanel(new JTextField());
+            //待添加的方法TextField
+            JTextField methodTextField = new JTextField("defaultMethodName");
+            methodTextField.setPreferredSize(new Dimension(100,25));
+            //待添加的方法组件
+            RadioPanelGroupManager.RadioPanelContainer addMethodPanelContainer =
+                    currMethodManager.creatRadionPanel(methodTextField);
 
-            radioPanelContainer.getRadioButton().addActionListener(radioActionListener);
+            //添加监听事件
+            addMethodPanelContainer.getRadioButton().addActionListener(radioActionListener);
 
-            JPanel methodListPanel = sqlPanel.getMethodListPanel();
-            methodListPanel.add(radioPanelContainer.getPanel());
+//            JPanel methodListPanel = sqlPanel.getMethodListPanel();
+//            methodListPanel.add(radioPanelContainer.getPanel());
 
-            //TODO 初始化方法
+            // 初始化参数和条件
             CheckBoxPanelGroupManager paramPanelManager = createColumnPanelGroupManager();
             CheckBoxPanelGroupManager wherePanelManager = createColumnPanelGroupManager();
-            parameterListGroupManagerMap.put(radioPanelContainer,paramPanelManager);
-            whereListGroupManagerMap.put(radioPanelContainer,wherePanelManager);
+            parameterListGroupManagerMap.put(addMethodPanelContainer,paramPanelManager);
+            whereListGroupManagerMap.put(addMethodPanelContainer,wherePanelManager);
+            resetMethodManagerPanel();
         }
     }
 
@@ -499,6 +510,6 @@ public class MapperSwing {
     public static void main(String[] args) {
         JFrame frame = new JFrame("MapperSwing");
         frame.setContentPane(new MapperSwing().mainPanel);
-        SwingConsole.run(frame,800,800);
+        SwingConsole.run(frame,1400,800);
     }
 }

@@ -153,7 +153,7 @@ public class CheckBoxPanelGroupManager {
         Collection<CheckBoxPanelContainer> checkBoxPanelContainers = panelContainerMap.values();
         List<CheckBoxPanelContainer> allPanelContainerList = new ArrayList<CheckBoxPanelContainer>();
         for(CheckBoxPanelContainer container : checkBoxPanelContainers){
-            allPanelContainerList.add(panelContainerMap.get(container));
+            allPanelContainerList.add(container);
         }
         return allPanelContainerList;
     }
