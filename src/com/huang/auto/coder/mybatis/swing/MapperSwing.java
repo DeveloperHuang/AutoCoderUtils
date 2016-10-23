@@ -73,6 +73,9 @@ public class MapperSwing {
     private JPanel updatePanel;
     private JPanel deletePanel;
 
+
+//    private JDialog dialog = new
+
     private SQLPanel sqlPanel;
 
     private DataBaseTableUtils dataBaseTableUtils;
@@ -174,6 +177,7 @@ public class MapperSwing {
 
 
         //TODO SQLPanel 改成弹窗式的方式，看看能否设好样式
+
         //选中的方法组对象
 //        JPanel selectedComponent = (JPanel) SQLTabbedPane.getSelectedComponent();
 //        if(selectedComponent == null){
