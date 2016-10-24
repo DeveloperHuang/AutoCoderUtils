@@ -74,7 +74,7 @@ public class MapperSwing {
     private JPanel deletePanel;
 
 
-//    private JDialog dialog = new
+    private JDialog dialog ;
 
     private SQLPanel sqlPanel;
 
@@ -121,10 +121,11 @@ public class MapperSwing {
         parameterListGroupManagerMap = new HashMap<RadioPanelGroupManager.RadioPanelContainer, CheckBoxPanelGroupManager>();
         whereListGroupManagerMap = new HashMap<RadioPanelGroupManager.RadioPanelContainer, CheckBoxPanelGroupManager>();
 
-        resetMethodManagerPanel();
+//        resetMethodManagerPanel();
 //        MenuPanel.men
         initConfig();
         initListener();
+        initSQLDialog();
 
     }
 
@@ -155,8 +156,23 @@ public class MapperSwing {
         addressTextField.setText(address);
         usernameTextField.setText(username);
         passwordTextField.setText(password);
+
+
         columnMap = new HashMap<String, String>();
 
+    }
+
+    public void initSQLDialog(){
+        dialog = new JDialog();
+        dialog.setLayout(new FlowLayout());
+        dialog.add(sqlPanel.getMethodManagerPanel());
+        dialog.setLocationRelativeTo(this.mainPanel);
+        dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
+
+
+        Dimension dimension = sqlPanel.getMethodManagerPanel().getPreferredSize();
+        dialog.setSize(dimension);
+        dialog.setLocation((int)(dialog.getX()-dimension.getWidth()/2),(int)(dialog.getY()-dimension.getHeight()/2));
     }
 
     //######################### 页面操作 #############################################
@@ -209,28 +225,34 @@ public class MapperSwing {
 //        3：获取该方法组选中的方法容器
         RadioPanelGroupManager.RadioPanelContainer selectedMethodContainer = currMethodManager.getSelectedPanelContainer();
 
-        if(selectedMethodContainer == null){
-//            selectedComponent.updateUI();
-            return;
-        }
-
-//        4：通过该容器获取所有的参数组和条件组
+        if(selectedMethodContainer != null) {
+//            4：通过该容器获取所有的参数组和条件组
 //        5：将参数组和条件组添加到对应的Panel
-        CheckBoxPanelGroupManager parameterGroupManager = parameterListGroupManagerMap.get(selectedMethodContainer);
-        if(parameterGroupManager != null){
-            List<CheckBoxPanelGroupManager.CheckBoxPanelContainer> parameterContainerList = parameterGroupManager.getAllPanelContainer();
-            for(CheckBoxPanelGroupManager.CheckBoxPanelContainer paramContainer : parameterContainerList){
-                paramPanel.add(paramContainer.getPanel());
+            CheckBoxPanelGroupManager parameterGroupManager = parameterListGroupManagerMap.get(selectedMethodContainer);
+            if (parameterGroupManager != null) {
+                List<CheckBoxPanelGroupManager.CheckBoxPanelContainer> parameterContainerList = parameterGroupManager.getAllPanelContainer();
+                for (CheckBoxPanelGroupManager.CheckBoxPanelContainer paramContainer : parameterContainerList) {
+                    paramPanel.add(paramContainer.getPanel());
+                }
+            }
+
+            CheckBoxPanelGroupManager whereGroupManager = whereListGroupManagerMap.get(selectedMethodContainer);
+            if (whereGroupManager != null) {
+                List<CheckBoxPanelGroupManager.CheckBoxPanelContainer> whereContainerList = whereGroupManager.getAllPanelContainer();
+                for (CheckBoxPanelGroupManager.CheckBoxPanelContainer whereContainer : whereContainerList) {
+                    wherePanel.add(whereContainer.getPanel());
+                }
             }
         }
 
-        CheckBoxPanelGroupManager whereGroupManager = whereListGroupManagerMap.get(selectedMethodContainer);
-        if(whereGroupManager != null){
-            List<CheckBoxPanelGroupManager.CheckBoxPanelContainer> whereContainerList = whereGroupManager.getAllPanelContainer();
-            for(CheckBoxPanelGroupManager.CheckBoxPanelContainer whereContainer : whereContainerList){
-                wherePanel.add(whereContainer.getPanel());
-            }
-        }
+        managerPanel.updateUI();
+        dialog.remove(managerPanel);
+        dialog.add(managerPanel);
+        dialog.validate();
+        dialog.repaint();
+
+        dialog.setVisible(true);
+
 //        selectedComponent.updateUI();
     }
 
@@ -489,7 +511,7 @@ public class MapperSwing {
         @Override
         public void actionPerformed(ActionEvent e) {
             MethodEnum methodEnum = getCurrMethod();
-            RadioPanelGroupManager currMethodManager = methodListGroupManagerMap.remove(methodEnum);
+            RadioPanelGroupManager currMethodManager = methodListGroupManagerMap.get(methodEnum);
             if(currMethodManager == null){
                 return ;
             }
