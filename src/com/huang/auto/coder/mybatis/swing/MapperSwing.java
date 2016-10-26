@@ -3,8 +3,6 @@ package com.huang.auto.coder.mybatis.swing;
 import com.huang.auto.coder.utils.*;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -207,7 +205,6 @@ public class MapperSwing {
         JPanel methodListPanel = sqlPanel.getMethodListPanel();
 
 
-        //TODO SQLPanel 改成弹窗式的方式，看看能否设好样式
 
         paramPanel.removeAll();
         wherePanel.removeAll();
@@ -404,7 +401,7 @@ public class MapperSwing {
             if(chooseTableComboBox.getSelectedIndex() >= 0){
                 String tableName = (String) chooseTableComboBox.getSelectedItem();
                 String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Mapper";
-                String packageMessage = PackageFactory.builderJavaPackageByFile(file);
+                String packageMessage = JavaClassTransverter.builderJavaPackageByFile(file);
                 mapperClassNameTextField.setText(className);
                 mapperPackageTextField.setText(packageMessage);
             }
@@ -420,7 +417,7 @@ public class MapperSwing {
             if(chooseTableComboBox.getSelectedIndex() >= 0){
                 String tableName = (String) chooseTableComboBox.getSelectedItem();
                 String className = StringTransverter.initialUpperCaseTransvert(tableName)+"MapperTest";
-                String packageMessage = PackageFactory.builderJavaPackageByFile(file);
+                String packageMessage = JavaClassTransverter.builderJavaPackageByFile(file);
                 testMapperClassNameTextField.setText(className);
                 testMapperPackageTextField.setText(packageMessage);
             }
@@ -436,7 +433,7 @@ public class MapperSwing {
             if(chooseTableComboBox.getSelectedIndex() >= 0){
                 String tableName = (String) chooseTableComboBox.getSelectedItem();
                 String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Service";
-                String packageMessage = PackageFactory.builderJavaPackageByFile(file);
+                String packageMessage = JavaClassTransverter.builderJavaPackageByFile(file);
                 serviceClassNameTextField.setText(className);
                 servicePackageTextField.setText(packageMessage);
             }
@@ -452,7 +449,7 @@ public class MapperSwing {
             if(chooseTableComboBox.getSelectedIndex() >= 0){
                 String tableName = (String) chooseTableComboBox.getSelectedItem();
                 String className = StringTransverter.initialUpperCaseTransvert(tableName)+"ServiceTest";
-                String packageMessage = PackageFactory.builderJavaPackageByFile(file);
+                String packageMessage = JavaClassTransverter.builderJavaPackageByFile(file);
                 testServiceClassNameTextField.setText(className);
                 testServicePackageTextField.setText(packageMessage);
             }

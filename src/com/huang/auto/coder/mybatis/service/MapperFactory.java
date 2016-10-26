@@ -2,13 +2,12 @@ package com.huang.auto.coder.mybatis.service;
 
 import com.huang.auto.coder.mybatis.swing.MethodEnum;
 import com.huang.auto.coder.utils.Column;
+import com.huang.auto.coder.utils.JavaClassTransverter;
+import com.huang.auto.coder.utils.StringTransverter;
 import com.huang.auto.coder.utils.Table;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by JianQiu on 2016/10/26.
@@ -30,7 +29,12 @@ import java.util.Map;
  */
 public class MapperFactory {
 
-    private String packageMessage;
+    public static final String IMPORT_LIST = "import java.util.List;";
+    public static final String XML_HEAD = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<!DOCTYPE mapper PUBLIC \"-//mybatis.org//DTD Mapper 3.0//EN\" \n" +
+            "\"http://mybatis.org/dtd/mybatis-3-mapper.dtd\">";
+
+    private File saveDirectory;
     private String interfaceName;
     private File beanFile;
     private Table beanTable;
@@ -38,8 +42,8 @@ public class MapperFactory {
     private Map<MethodEnum,List<MethodInfo>> methodInfoListMap;
 
 
-    public MapperFactory(String packageMessage, String interfaceName, File beanFile, Table beanTable) {
-        this.packageMessage = packageMessage;
+    public MapperFactory(File saveDirectory, String interfaceName, File beanFile, Table beanTable) {
+        this.saveDirectory = saveDirectory;
         this.interfaceName = interfaceName;
         this.beanFile = beanFile;
         this.beanTable = beanTable;
@@ -51,6 +55,13 @@ public class MapperFactory {
         }
     }
 
+    /**
+     * 添加待生成的方法
+     * @param methodEnum 方法类型
+     * @param methodName 方法名称
+     * @param paramList 参数集合
+     * @param whereList 条件集合
+     */
     public void addMethod(MethodEnum methodEnum, String methodName, List<String> paramList,List<String> whereList){
 
         List<Column> paramColumnList = null;
@@ -62,10 +73,78 @@ public class MapperFactory {
             whereColumnList = getColumnListByNameList(whereList);
         }
         MethodInfo methodInfo = new MethodInfo(methodName,paramColumnList,whereColumnList);
-
-
     }
 
+    /**
+     * 获取待生成的接口内容
+     * @return 接口内容字符串
+     */
+    public String getInterfaceContext(){
+        StringBuffer interfaceContextBuffer = new StringBuffer();
+
+        String import_bean = JavaClassTransverter.builderJavaPackageByFile(beanFile).replace("package","import");
+        String packageMessage = JavaClassTransverter.builderJavaPackageByFile(saveDirectory);
+        String head = packageMessage+"\n"+IMPORT_LIST+"\n"+ import_bean+"\n";
+        interfaceContextBuffer.append(head);
+        interfaceContextBuffer.append("public interface "+interfaceName+" {\n");
+        interfaceContextBuffer.append(getInterfaceMethodContext());
+        interfaceContextBuffer.append("}");
+
+        return interfaceContextBuffer.toString();
+    }
+
+    /**
+     * 获取接口方法内容
+     * @return 方法内容字符串
+     */
+    private String getInterfaceMethodContext(){
+        StringBuffer methodContext = new StringBuffer();
+        Set<MethodEnum> methodEnumSet = methodInfoListMap.keySet();
+        for(MethodEnum methodEnum : methodEnumSet){
+            List<MethodInfo> methodInfoList = methodInfoListMap.get(methodEnum);
+            String resultContext = null;
+            String beanClassName = JavaClassTransverter.getClassName(beanFile);
+            switch (methodEnum){
+                case SELECT:
+                    resultContext = "List<"+beanClassName+">";
+                    break;
+                default:
+                    resultContext = "void";
+                    break;
+            }
+            for(MethodInfo methodInfo : methodInfoList){
+                methodContext.append("public "+resultContext+" "+methodInfo.methodName
+                        +"("+beanClassName+" "+ StringTransverter.initialLowerCaseTransvert(beanClassName)+");\n");
+            }
+        }
+        return methodContext.toString();
+    }
+
+    public String getXMLContext() {
+        StringBuffer xmlContext = new StringBuffer();
+
+        xmlContext.append(XML_HEAD);
+        String packageMessage = JavaClassTransverter.builderJavaPackageByFile(saveDirectory);
+        String simplePackage = packageMessage.replace("package","").replace(";","").trim();
+        xmlContext.append("<mapper namespace=\""+simplePackage+"\">");
+        //TODO 待生成的内容如下
+        /*
+         * 1:resultMap
+         * 2:parameterMap
+         * 3:SELECT
+         * 4:INSERT
+         * 5:UPDATE
+         * 6:DELETE
+         */
+        return xmlContext.toString();
+    }
+
+
+    /**
+     * 将方法信息存入内存中
+     * @param methodEnum 方法类型
+     * @param methodInfo 方法信息
+     */
     private void addMethodInfo(MethodEnum methodEnum ,MethodInfo methodInfo){
         List<MethodInfo> methodInfoList ;
         if(methodInfoListMap.containsKey(methodEnum)){
@@ -75,6 +154,19 @@ public class MapperFactory {
             methodInfoListMap.put(methodEnum,methodInfoList);
         }
         methodInfoList.add(methodInfo);
+    }
+
+    /**
+     * 将参数名称和table的列一一对应
+     * @param nameList 参数名称列表
+     * @return 对应的Column列
+     */
+    private List<Column> getColumnListByNameList(List<String> nameList){
+        List<Column> columnList = new ArrayList<Column>();
+        for(String name : nameList){
+            columnList.add(tableColumnMap.get(name));
+        }
+        return columnList;
     }
 
     class MethodInfo{
@@ -87,14 +179,6 @@ public class MapperFactory {
             this.paramColumnList = paramColumnList;
             this.whereColumnList = whereColumnList;
         }
-    }
-
-    private List<Column> getColumnListByNameList(List<String> nameList){
-        List<Column> columnList = new ArrayList<Column>();
-        for(String name : nameList){
-            columnList.add(tableColumnMap.get(name));
-        }
-        return columnList;
     }
 
 }

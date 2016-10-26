@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 /**
  * Created by JianQiu on 2016/10/12.
  */
-public class PackageFactory {
+public class JavaClassTransverter {
 
     public static final String SRC_PATH = File.separator+"src"+File.separator;
     public static final String TEST_PATH = File.separator+"test"+File.separator;
@@ -31,6 +31,15 @@ public class PackageFactory {
         String packagePath = path.substring(lastIndex+sourceDir.length());
         String packageMessage = "package "+packagePath.replaceAll(Matcher.quoteReplacement(File.separator),".")+";";
         return packageMessage;
+    }
+
+    /**
+     * 获取Java文件的ClassName
+     * @return ClassName
+     */
+    public static String getClassName(File file){
+        String fileName = file.getName();
+        return fileName.substring(0,fileName.indexOf("."));
     }
 
 }

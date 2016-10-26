@@ -7,7 +7,7 @@ import org.junit.After;
 import java.io.File;
 
 /** 
-* PackageFactory Tester. 
+* JavaClassTransverter Tester.
 * 
 * @author <Authors name> 
 * @version 1.0 
@@ -31,7 +31,7 @@ public class PackageFactoryTest {
     public void testBuilderJavaPackageByFile() {
         File file = new File("abc"+File.separator+"ds"+File.separator+"src"+File.separator+"ds"+File.separator+"src"
                 +File.separator+"com"+File.separator+"name"+File.separator+"da.java");
-        String packageMessage = PackageFactory.builderJavaPackageByFile(file);
+        String packageMessage = JavaClassTransverter.builderJavaPackageByFile(file);
         System.out.println(packageMessage);
     }
 
