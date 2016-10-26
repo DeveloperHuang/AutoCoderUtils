@@ -3,9 +3,10 @@ package com.huang.auto.coder.utils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by JianQiu on 2016/10/15.
@@ -13,8 +14,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RadioPanelGroupManager {
 
-    private Map<JRadioButton,RadioPanelContainer> panelContainerMap = new ConcurrentHashMap<JRadioButton, RadioPanelContainer>();
+    private Map<JRadioButton,RadioPanelContainer> panelContainerMap = new LinkedHashMap<JRadioButton, RadioPanelContainer>();
     private ButtonGroup buttonGroup = new ButtonGroup();
+    private RadioFocusListener radioFocusListener = new RadioFocusListener();
 
     public RadioPanelGroupManager(){
 
@@ -29,6 +31,7 @@ public class RadioPanelGroupManager {
         panelContainerMap.put(radioButton,panelContainer);
         panel.add(radioButton);
         panel.add(component);
+        component.addFocusListener(radioFocusListener);
         return panelContainer;
     }
 
@@ -121,6 +124,27 @@ public class RadioPanelGroupManager {
     public void clear(){
         panelContainerMap.clear();
         buttonGroup = new ButtonGroup();
+    }
+
+    class RadioFocusListener implements FocusListener{
+
+        @Override
+        public void focusGained(FocusEvent e) {
+            Component component = (Component) e.getSource();
+            Collection<RadioPanelContainer> containers = panelContainerMap.values();
+            for (RadioPanelContainer container : containers) {
+                if(container.getComponent() == component){
+                    container.getRadioButton().doClick();
+                    break;
+                }
+            }
+
+        }
+
+        @Override
+        public void focusLost(FocusEvent e) {
+
+        }
     }
 
     public class RadioPanelContainer {

@@ -9,7 +9,7 @@
       <background color="-3675986"/>
       <maximumSize width="1800" height="1200"/>
       <minimumSize width="100" height="171"/>
-      <preferredSize width="1600" height="600"/>
+      <preferredSize width="1600" height="650"/>
     </properties>
     <border type="none"/>
     <children>

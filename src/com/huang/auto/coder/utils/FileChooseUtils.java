@@ -32,7 +32,7 @@ public class FileChooseUtils {
      * 选择文件
      * @param parentPanel 所属Panel
      * @param belongObject 所属对象，用于标识记录上次打开的路径
-     * @param currentDirectory 默认打开的目录
+     * @param currentDirectory 默认打开的目录(可以为null)
      * @return 选中的文件
      */
     public File selectedFile(Component parentPanel,Object belongObject,File currentDirectory){

@@ -14,8 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CheckBoxPanelGroupManager {
 
-    private Map<JCheckBox,CheckBoxPanelContainer> panelContainerMap = new ConcurrentHashMap<JCheckBox, CheckBoxPanelContainer>();
-    private Map<JCheckBox,Boolean> selectedCheckBoxMap = new ConcurrentHashMap<JCheckBox, Boolean>();
+    private Map<JCheckBox,CheckBoxPanelContainer> panelContainerMap = new LinkedHashMap<JCheckBox, CheckBoxPanelContainer>();
+    private Map<JCheckBox,Boolean> selectedCheckBoxMap = new LinkedHashMap<JCheckBox, Boolean>();
     private CheckBoxActionListener selectedListener = new CheckBoxActionListener();
 
     public CheckBoxPanelGroupManager(){

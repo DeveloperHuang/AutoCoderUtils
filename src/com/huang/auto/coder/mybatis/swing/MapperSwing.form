@@ -416,59 +416,48 @@
           </component>
         </children>
       </grid>
-      <tabbedpane id="e5e89" binding="SQLTabbedPane">
+      <grid id="e5d14" binding="SQLMethodPanel" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
-            <preferred-size width="200" height="200"/>
-          </grid>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties>
-          <background color="-15669109"/>
-        </properties>
+        <properties/>
         <border type="none"/>
         <children>
-          <grid id="21c4a" binding="insertPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+          <component id="b78ab" class="javax.swing.JButton" binding="SELECTButton" default-binding="true">
             <constraints>
-              <tabbedpane title="INSERT"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <background color="-3151795"/>
+              <text value="SELECT"/>
             </properties>
-            <border type="none"/>
-            <children/>
-          </grid>
-          <grid id="212c8" binding="selectPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+          </component>
+          <component id="c497c" class="javax.swing.JButton" binding="DELETEButton" default-binding="true">
             <constraints>
-              <tabbedpane title="SELECT"/>
+              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <background color="-1529280"/>
+              <text value="DELETE"/>
             </properties>
-            <border type="none"/>
-            <children/>
-          </grid>
-          <grid id="23992" binding="updatePanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+          </component>
+          <component id="802f8" class="javax.swing.JButton" binding="INSERTButton" default-binding="true">
             <constraints>
-              <tabbedpane title="UPDATE"/>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <background color="-1541303"/>
+              <text value="INSERT"/>
             </properties>
-            <border type="none"/>
-            <children/>
-          </grid>
-          <grid id="521b5" binding="deletePanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+          </component>
+          <component id="b17a2" class="javax.swing.JButton" binding="UPDATEButton" default-binding="true">
             <constraints>
-              <tabbedpane title="DELETE"/>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <background color="-1534861"/>
+              <text value="UPDATE"/>
             </properties>
-            <border type="none"/>
-            <children/>
-          </grid>
+          </component>
         </children>
-      </tabbedpane>
+      </grid>
     </children>
   </grid>
 </form>

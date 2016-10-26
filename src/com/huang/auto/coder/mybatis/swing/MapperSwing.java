@@ -67,11 +67,11 @@ public class MapperSwing {
     private JLabel testServicePackageLabel;
     private JPanel servicePanel;
     private JButton connectButton;
-    private JTabbedPane SQLTabbedPane;
-    private JPanel insertPanel;
-    private JPanel selectPanel;
-    private JPanel updatePanel;
-    private JPanel deletePanel;
+    private JButton SELECTButton;
+    private JButton DELETEButton;
+    private JButton INSERTButton;
+    private JButton UPDATEButton;
+    private JPanel SQLMethodPanel;
 
 
     private JDialog dialog ;
@@ -89,10 +89,12 @@ public class MapperSwing {
     private Map<RadioPanelGroupManager.RadioPanelContainer,CheckBoxPanelGroupManager> whereListGroupManagerMap;
 
     private MethodRadioActionListener radioActionListener = new MethodRadioActionListener();
+    private SQLMethodButtonListener sqlMethodButtonListener = new SQLMethodButtonListener();
 
     //当前表信息
     private Table table;
     private Map<String,String> columnMap;
+    private MethodEnum currMethodEnum = MethodEnum.SELECT;//
 
     /*
      * 1：建立连接
@@ -121,7 +123,7 @@ public class MapperSwing {
         parameterListGroupManagerMap = new HashMap<RadioPanelGroupManager.RadioPanelContainer, CheckBoxPanelGroupManager>();
         whereListGroupManagerMap = new HashMap<RadioPanelGroupManager.RadioPanelContainer, CheckBoxPanelGroupManager>();
 
-//        resetMethodManagerPanel();
+//        refreshSQLPanelDialog();
 //        MenuPanel.men
         initConfig();
         initListener();
@@ -142,7 +144,11 @@ public class MapperSwing {
         chooseServiceSaveLocalButton.addActionListener(new ChooseServiceButtonListener());
         chooseTestServiceLocalButton.addActionListener(new ChooseTestServiceButtonListener());
 
-        SQLTabbedPane.addChangeListener(new SQLTabbedPaneChangeListener());
+        SELECTButton.addActionListener(sqlMethodButtonListener);
+        INSERTButton.addActionListener(sqlMethodButtonListener);
+        UPDATEButton.addActionListener(sqlMethodButtonListener);
+        DELETEButton.addActionListener(sqlMethodButtonListener);
+
         JButton addButton = sqlPanel.getAddButton();
         JButton deleteButton = sqlPanel.getDeleteButton();
         addButton.addActionListener(new AddButtonActionListener());
@@ -157,9 +163,18 @@ public class MapperSwing {
         usernameTextField.setText(username);
         passwordTextField.setText(password);
 
-
         columnMap = new HashMap<String, String>();
+        lastChooseBeanFile = new File("E:\\IntelliJWorkspace\\AutoCoderUtils\\test\\com\\huang\\auto\\coder\\bean\\pojo");
+    }
 
+
+    /**
+     * 清除上个table对应的所有数据
+     */
+    public void clearMethodManager(){
+        methodListGroupManagerMap.clear();
+        parameterListGroupManagerMap.clear();
+        whereListGroupManagerMap.clear();
     }
 
     public void initSQLDialog(){
@@ -178,14 +193,14 @@ public class MapperSwing {
     //######################### 页面操作 #############################################
 
     /**
-     * 重新设置方法管理页面
+     * 刷新SQLPanel弹窗
      * 1:获取该方法组的所有方法Panel
      * 2：将所有的Panel添加到对应的Panel
      * 3：获取该方法组选中的方法容器
      * 4：通过该容器获取所有的参数组和条件组
      * 5：将参数组和条件组添加到对应的Panel
      */
-    public void resetMethodManagerPanel(){
+    public void refreshSQLPanelDialog(){
         JPanel managerPanel = sqlPanel.getMethodManagerPanel();
         JPanel paramPanel = sqlPanel.getParameterPanel();
         JPanel wherePanel = sqlPanel.getWherePanel();
@@ -194,14 +209,6 @@ public class MapperSwing {
 
         //TODO SQLPanel 改成弹窗式的方式，看看能否设好样式
 
-        //选中的方法组对象
-//        JPanel selectedComponent = (JPanel) SQLTabbedPane.getSelectedComponent();
-//        if(selectedComponent == null){
-//            return;
-//        }
-        //添加的同时会自动删除所属父级
-//        selectedComponent.add(managerPanel);
-        //删除所有动态添加的组件
         paramPanel.removeAll();
         wherePanel.removeAll();
         methodListPanel.removeAll();
@@ -209,7 +216,7 @@ public class MapperSwing {
 //        1:获取该方法组的所有方法Panel
 
         //当前方法组管理者
-        MethodEnum methodEnum = getCurrMethod();
+        MethodEnum methodEnum = currMethodEnum;
         RadioPanelGroupManager currMethodManager = getMethodRadioGroupManager(methodEnum);
         if(currMethodManager == null){
             currMethodManager = new RadioPanelGroupManager();
@@ -250,30 +257,10 @@ public class MapperSwing {
         dialog.add(managerPanel);
         dialog.validate();
         dialog.repaint();
-
         dialog.setVisible(true);
-
 //        selectedComponent.updateUI();
     }
 
-    /**
-     * 获取当前方法
-     * @return 当前方法对应Enum
-     */
-    public MethodEnum getCurrMethod(){
-        //选中的方法组对象
-        JPanel selectedComponent = (JPanel) SQLTabbedPane.getSelectedComponent();
-        if(insertPanel == selectedComponent){
-            return MethodEnum.INSERT;
-        }else if(updatePanel == selectedComponent){
-            return MethodEnum.UPDATE;
-        }else if(deletePanel == selectedComponent){
-            return MethodEnum.DELETE;
-        }else{
-            //默认是SELECT
-            return MethodEnum.SELECT;
-        }
-    }
 
     /**
      * 获取或创建MethodGroupManager
@@ -388,6 +375,7 @@ public class MapperSwing {
                 for(Column column : table.getColumns()){
                     columnMap.put(column.getFieldName(),column.getFieldType());
                 }
+                clearMethodManager();
                 //TODO 如果存在上次的Bean目录，则搜索该目录的Bean文件
 //                setBeanFilePathFieldText(tableName+".java");
             }
@@ -399,9 +387,11 @@ public class MapperSwing {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            File file = fileChooseUtils.selectedFile(MapperSwing.this.mainPanel,chooseBeanButton);
-            lastChooseBeanFile = file;
-            beanFilePathTextField.setText(file.getPath());
+            File file = fileChooseUtils.selectedFile(MapperSwing.this.mainPanel,chooseBeanButton,lastChooseBeanFile);
+            lastChooseBeanFile = file.getParentFile();
+            if(file != null){
+                beanFilePathTextField.setText(file.getName());
+            }
         }
     }
 
@@ -469,11 +459,21 @@ public class MapperSwing {
         }
     }
 
-    class SQLTabbedPaneChangeListener implements ChangeListener{
+    class SQLMethodButtonListener implements ActionListener{
 
         @Override
-        public void stateChanged(ChangeEvent e) {
-            resetMethodManagerPanel();
+        public void actionPerformed(ActionEvent e) {
+            JButton methodButton = (JButton) e.getSource();
+            if(methodButton == SELECTButton){
+                currMethodEnum = MethodEnum.SELECT;
+            }else if(methodButton == INSERTButton){
+                currMethodEnum = MethodEnum.INSERT;
+            }else if(methodButton == UPDATEButton){
+                currMethodEnum = MethodEnum.UPDATE;
+            }else if(methodButton == DELETEButton){
+                currMethodEnum = MethodEnum.DELETE;
+            }
+            refreshSQLPanelDialog();
         }
     }
 
@@ -481,7 +481,7 @@ public class MapperSwing {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            MethodEnum methodEnum = getCurrMethod();
+            MethodEnum methodEnum = currMethodEnum;
             //当前方法管理器
             RadioPanelGroupManager currMethodManager = methodListGroupManagerMap.get(methodEnum);
             //待添加的方法TextField
@@ -502,7 +502,7 @@ public class MapperSwing {
             CheckBoxPanelGroupManager wherePanelManager = createColumnPanelGroupManager();
             parameterListGroupManagerMap.put(addMethodPanelContainer,paramPanelManager);
             whereListGroupManagerMap.put(addMethodPanelContainer,wherePanelManager);
-            resetMethodManagerPanel();
+            refreshSQLPanelDialog();
         }
     }
 
@@ -510,7 +510,7 @@ public class MapperSwing {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            MethodEnum methodEnum = getCurrMethod();
+            MethodEnum methodEnum = currMethodEnum;
             RadioPanelGroupManager currMethodManager = methodListGroupManagerMap.get(methodEnum);
             if(currMethodManager == null){
                 return ;
@@ -521,7 +521,7 @@ public class MapperSwing {
                 parameterListGroupManagerMap.remove(currRadioContainer);
                 whereListGroupManagerMap.remove(currRadioContainer);
             }
-            resetMethodManagerPanel();
+            refreshSQLPanelDialog();
         }
     }
 
@@ -529,7 +529,7 @@ public class MapperSwing {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            resetMethodManagerPanel();
+            refreshSQLPanelDialog();
         }
     }
 
