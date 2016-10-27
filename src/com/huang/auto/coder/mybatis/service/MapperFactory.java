@@ -124,9 +124,8 @@ public class MapperFactory {
         StringBuffer xmlContext = new StringBuffer();
 
         xmlContext.append(XML_HEAD);
-        String packageMessage = JavaClassTransverter.builderJavaPackageByFile(saveDirectory);
-        String simplePackage = packageMessage.replace("package","").replace(";","").trim();
-        xmlContext.append("<mapper namespace=\""+simplePackage+"\">");
+        String packageContext = JavaClassTransverter.builderJavaPackageContextByFile(saveDirectory);
+        xmlContext.append("<mapper namespace=\""+saveDirectory+"\">");
         //TODO 待生成的内容如下
         /*
          * 1:resultMap
@@ -138,6 +137,36 @@ public class MapperFactory {
          */
         return xmlContext.toString();
     }
+
+    private String getParameterMapContext(){
+        StringBuffer parameterMapContext = new StringBuffer();
+
+        String packageContext = JavaClassTransverter.builderJavaPackageContextByFile(beanFile);
+        parameterMapContext.append("<parameterMap id=\""+getParameterMapId()+"\"\n" +
+                "\t\ttype=\""+packageContext+"\">\n");
+        List<Column> columnList = beanTable.getColumns();
+        for(Column column : columnList){
+            //TODO 编写jdbcType和数据库type的对应关系
+            parameterMapContext.append("\t\t<parameter property=\""+column.getFieldName()
+                    +"\" jdbcType=\"INTEGER\" />\n");
+        }
+
+
+        return parameterMapContext.toString();
+    }
+
+    private String getParameterMapId(){
+        String paramMapId = JavaClassTransverter.getLowerClassName(beanFile)+"Param";
+        return paramMapId;
+    }
+
+    private String getResultMapId(){
+        String resultMapId = JavaClassTransverter.getLowerClassName(beanFile)+"Result";
+        return resultMapId;
+    }
+
+
+
 
 
     /**
