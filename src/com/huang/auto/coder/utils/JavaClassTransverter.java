@@ -16,10 +16,19 @@ public class JavaClassTransverter {
      * @param file java文件或路径
      * @return package语句
      */
-    public static String builderJavaPackageByFile(File file){
-        String packageContext = builderJavaPackageContextByFile(file);
+    public static String builderPackageByFile(File file){
+        String packageContext = builderPackageContextByFile(file);
         if(packageContext != null && packageContext.length() > 0){
             return "package "+packageContext+";";
+        }else{
+            return null;
+        }
+    }
+
+    public static String builderImportByFile(File file){
+        String packageContext = builderPackageContextByFile(file);
+        if(packageContext != null && packageContext.length() > 0){
+            return "import "+packageContext+"."+getClassName(file)+";";
         }else{
             return null;
         }
@@ -30,7 +39,7 @@ public class JavaClassTransverter {
      * @param file java文件或路径
      * @return package中的路径内容
      */
-    public static String builderJavaPackageContextByFile(File file){
+    public static String builderPackageContextByFile(File file){
         String path;
         if (file.isDirectory()) {
             path = file.getPath();

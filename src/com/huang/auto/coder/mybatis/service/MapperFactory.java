@@ -32,7 +32,23 @@ public class MapperFactory {
     public static final String IMPORT_LIST = "import java.util.List;";
     public static final String XML_HEAD = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<!DOCTYPE mapper PUBLIC \"-//mybatis.org//DTD Mapper 3.0//EN\" \n" +
-            "\"http://mybatis.org/dtd/mybatis-3-mapper.dtd\">";
+            "\"http://mybatis.org/dtd/mybatis-3-mapper.dtd\">\n";
+    private static Map<String,String> jdbcTypeMap = new HashMap<String,String>();
+    static {
+        jdbcTypeMap.put("int","INTEGER");
+        jdbcTypeMap.put("double","DOUBLE");
+        jdbcTypeMap.put("float","Float");
+        jdbcTypeMap.put("varchar","VARCHAR");
+        jdbcTypeMap.put("bigint","BIGINT");
+        jdbcTypeMap.put("text","VARCHAR");
+        jdbcTypeMap.put("char","CHAR");
+        jdbcTypeMap.put("date","DATE");
+        jdbcTypeMap.put("time","DATE");
+        jdbcTypeMap.put("year","INTEGER");
+        jdbcTypeMap.put("datetime","DATE");
+        jdbcTypeMap.put("timestamp","DATE");
+        jdbcTypeMap.put("longtext","VARCHAR");
+    }
 
     private File saveDirectory;
     private String interfaceName;
@@ -73,6 +89,7 @@ public class MapperFactory {
             whereColumnList = getColumnListByNameList(whereList);
         }
         MethodInfo methodInfo = new MethodInfo(methodName,paramColumnList,whereColumnList);
+        addMethodInfo(methodEnum,methodInfo);
     }
 
     /**
@@ -82,8 +99,8 @@ public class MapperFactory {
     public String getInterfaceContext(){
         StringBuffer interfaceContextBuffer = new StringBuffer();
 
-        String import_bean = JavaClassTransverter.builderJavaPackageByFile(beanFile).replace("package","import");
-        String packageMessage = JavaClassTransverter.builderJavaPackageByFile(saveDirectory);
+        String import_bean = JavaClassTransverter.builderImportByFile(beanFile);
+        String packageMessage = JavaClassTransverter.builderPackageByFile(saveDirectory);
         String head = packageMessage+"\n"+IMPORT_LIST+"\n"+ import_bean+"\n";
         interfaceContextBuffer.append(head);
         interfaceContextBuffer.append("public interface "+interfaceName+" {\n");
@@ -113,7 +130,7 @@ public class MapperFactory {
                     break;
             }
             for(MethodInfo methodInfo : methodInfoList){
-                methodContext.append("public "+resultContext+" "+methodInfo.methodName
+                methodContext.append("\tpublic "+resultContext+" "+methodInfo.methodName
                         +"("+beanClassName+" "+ StringTransverter.initialLowerCaseTransvert(beanClassName)+");\n");
             }
         }
@@ -124,34 +141,54 @@ public class MapperFactory {
         StringBuffer xmlContext = new StringBuffer();
 
         xmlContext.append(XML_HEAD);
-        String packageContext = JavaClassTransverter.builderJavaPackageContextByFile(saveDirectory);
-        xmlContext.append("<mapper namespace=\""+saveDirectory+"\">");
+        String packageContext = JavaClassTransverter.builderPackageContextByFile(saveDirectory);
+        xmlContext.append("<mapper namespace=\""+saveDirectory+"\">\n");
         //TODO 待生成的内容如下
-        /*
-         * 1:resultMap
-         * 2:parameterMap
-         * 3:SELECT
-         * 4:INSERT
-         * 5:UPDATE
-         * 6:DELETE
-         */
+
+//          1:resultMap
+        xmlContext.append(getResultMap());
+//          2:parameterMap
+        xmlContext.append(getParameterMapContext());
+//          3:SELECT
+        xmlContext.append(getSelectMethodContext());
+//          4:INSERT
+        xmlContext.append(getInsertMethodContext());
+//          5:UPDATE
+        xmlContext.append(getUpdateMethodContext());
+//          6:DELETE
+        xmlContext.append(getDeleteMethodContext());
+
+        xmlContext.append("</mapper>");
         return xmlContext.toString();
+    }
+
+    private String getResultMap(){
+        StringBuffer resultMapContext = new StringBuffer();
+        String packageContext = JavaClassTransverter.builderPackageContextByFile(beanFile)+"."+JavaClassTransverter.getClassName(beanFile);
+        resultMapContext.append("\t<resultMap type=\""+packageContext+"\"\n" +
+                "\t\tid=\""+getResultMapId()+"\">\n");
+        List<Column> columnList = beanTable.getColumns();
+        for(Column column : columnList){
+            resultMapContext.append("\t\t<result property=\""+column.getFieldName()+"\" column=\""+column.getFieldName()+"\"/>\n");
+        }
+        resultMapContext.append("\t</resultMap>\n");
+        return resultMapContext.toString();
     }
 
     private String getParameterMapContext(){
         StringBuffer parameterMapContext = new StringBuffer();
 
-        String packageContext = JavaClassTransverter.builderJavaPackageContextByFile(beanFile);
-        parameterMapContext.append("<parameterMap id=\""+getParameterMapId()+"\"\n" +
+        String packageContext = JavaClassTransverter.builderPackageContextByFile(beanFile)+"."+JavaClassTransverter.getClassName(beanFile);
+        parameterMapContext.append("\t<parameterMap id=\""+getParameterMapId()+"\"\n" +
                 "\t\ttype=\""+packageContext+"\">\n");
         List<Column> columnList = beanTable.getColumns();
         for(Column column : columnList){
             //TODO 编写jdbcType和数据库type的对应关系
+            String jdbcType = jdbcTypeMap.get(column.getFieldType());
             parameterMapContext.append("\t\t<parameter property=\""+column.getFieldName()
-                    +"\" jdbcType=\"INTEGER\" />\n");
+                    +"\" jdbcType=\""+jdbcType+"\" />\n");
         }
-
-
+        parameterMapContext.append("\t</parameterMap>\n");
         return parameterMapContext.toString();
     }
 
@@ -165,9 +202,151 @@ public class MapperFactory {
         return resultMapId;
     }
 
+    private String getSelectMethodContext(){
+        StringBuffer selectMethodContext = new StringBuffer();
+        List<MethodInfo> methodInfoList = methodInfoListMap.get(MethodEnum.SELECT);
+        if(methodInfoList != null && methodInfoList.size() > 0){
+            for(MethodInfo methodInfo : methodInfoList){
 
+                List<Column> paramColumnList = methodInfo.paramColumnList;
+                if(paramColumnList == null || paramColumnList.size() == 0){
+                    continue;
+                }
+                //***************构造SELECT内容******************
+                StringBuffer paramBuffer = new StringBuffer();
+                for(int i = 0 ; i < paramColumnList.size() ; i++){
+                    paramBuffer.append(paramColumnList.get(i).getFieldName());
+                    if(i != paramColumnList.size()-1){
+                        paramBuffer.append(",");
+                    }
+                }
+                //***************构造SELECT内容完毕******************
+                //***************构造WHERE内容******************
+                StringBuffer whereBuffere = new StringBuffer();
+                List<Column> whereColumnList = methodInfo.whereColumnList;
+                if(whereColumnList != null && whereColumnList.size() > 0){
+                    whereBuffere.append("\t\tWHERE ");
+                    for(int i = 0 ; i < whereColumnList.size() ; i++){
+                        //id = #{id}
+                        whereBuffere.append(whereColumnList.get(i).getFieldName()
+                                +" = #{"+whereColumnList.get(i).getFieldName()+"}");
+                        if(i != whereColumnList.size()-1){
+                            whereBuffere.append(" AND ");
+                        }
+                    }
+                    whereBuffere.append("\n");
+                }
+                //***************构造WHERE内容完毕******************
+                selectMethodContext.append("\t<select id=\""+methodInfo.methodName+"\" resultMap=\""+getResultMapId()+"\">\n");
+                selectMethodContext.append("\t\tSELECT "+paramBuffer.toString()+"\n");
+                selectMethodContext.append("\t\tFROM "+beanTable.getTableName()+"\n");
+                selectMethodContext.append(whereBuffere.toString());
+                selectMethodContext.append("\t</select>\n");
+            }
+        }
+        return selectMethodContext.toString();
+    }
 
+    private String getInsertMethodContext(){
+        StringBuffer insertMethodContext = new StringBuffer();
+        List<MethodInfo> methodInfoList = methodInfoListMap.get(MethodEnum.INSERT);
+        if(methodInfoList != null && methodInfoList.size() > 0){
+            for(MethodInfo methodInfo : methodInfoList){
+                List<Column> paramColumnList = methodInfo.paramColumnList;
+                if(paramColumnList == null || paramColumnList.size() == 0){
+                    continue;
+                }
+                StringBuffer columnBuffer = new StringBuffer();
+                StringBuffer propertyBuffer = new StringBuffer();
+                for (int i = 0; i < paramColumnList.size(); i++) {
 
+                    String columnName = paramColumnList.get(i).getFieldName();
+                    columnBuffer.append(columnName);
+                    propertyBuffer.append("#{"+columnName+"}");
+                    if (i != paramColumnList.size() - 1) {
+                        columnBuffer.append(",");
+                        propertyBuffer.append(",");
+                    }
+                }
+                insertMethodContext.append("\t<insert id=\""+methodInfo.methodName+"\" parameterMap=\""+getParameterMapId()+"\">\n");
+                insertMethodContext.append("\t\tINSERT INTO "+beanTable.getTableName()+"("+columnBuffer.toString()+")\n");
+                insertMethodContext.append("\t\tVALUES("+propertyBuffer.toString()+")\n");
+                insertMethodContext.append("\t</insert>\n");
+            }
+        }
+        return insertMethodContext.toString();
+    }
+
+    private String getUpdateMethodContext(){
+        StringBuffer updateMethodContext = new StringBuffer();
+        List<MethodInfo> methodInfoList = methodInfoListMap.get(MethodEnum.UPDATE);
+        if(methodInfoList != null && methodInfoList.size() > 0){
+            for(MethodInfo methodInfo : methodInfoList){
+                List<Column> paramColumnList = methodInfo.paramColumnList;
+                if(paramColumnList == null || paramColumnList.size() == 0){
+                    continue;
+                }
+                //******************构建设置参数********************
+                StringBuffer paramBuffer = new StringBuffer();
+                for(int i = 0 ; i < paramColumnList.size() ; i++){
+                    String fieldName = paramColumnList.get(i).getFieldName();
+                    paramBuffer.append(""+fieldName+" = #{"+fieldName+"}");
+                    if(i != paramColumnList.size()-1){
+                        paramBuffer.append(",");
+                    }
+                }
+                //******************构建条件参数********************
+                List<Column> whereColumnList = methodInfo.whereColumnList;
+                StringBuffer whereBuffer = new StringBuffer();
+                if(whereColumnList != null || whereColumnList.size() > 0){
+                    whereBuffer.append("\t\tWHERE ");
+                    for(int i = 0 ; i < whereColumnList.size() ; i++){
+                        String fieldName = whereColumnList.get(i).getFieldName();
+                        whereBuffer.append(fieldName+" = #{"+fieldName+"}");
+                        if(i != whereColumnList.size()-1){
+                            whereBuffer.append(" AND ");
+                        }
+                    }
+                    whereBuffer.append("\n");
+                }
+
+                //******************组装********************
+                updateMethodContext.append("\t<update id=\""+methodInfo.methodName+"\" parameterMap=\""+getParameterMapId()+"\">\n");
+                updateMethodContext.append("\t\tUPDATE "+beanTable.getTableName()+"\n");
+                updateMethodContext.append("\t\tSET "+paramBuffer.toString()+"\n");
+                updateMethodContext.append(whereBuffer.toString());
+                updateMethodContext.append("\t\t</update>\n");
+            }
+        }
+        return updateMethodContext.toString();
+    }
+
+    private String getDeleteMethodContext(){
+        StringBuffer deleteMethodContext = new StringBuffer();
+        List<MethodInfo> methodInfoList = methodInfoListMap.get(MethodEnum.DELETE);
+        if(methodInfoList != null && methodInfoList.size() > 0){
+            for(MethodInfo methodInfo : methodInfoList){
+                List<Column> whereColumnList = methodInfo.whereColumnList;
+                StringBuffer whereBuffer = new StringBuffer();
+                if(whereColumnList != null || whereColumnList.size() > 0){
+                    whereBuffer.append("\t\tWHERE ");
+                    for(int i = 0 ; i < whereColumnList.size() ; i++){
+                        String fieldName = whereColumnList.get(i).getFieldName();
+                        whereBuffer.append(fieldName+" = #{"+fieldName+"}");
+                        if(i != whereColumnList.size()-1){
+                            whereBuffer.append(" AND ");
+                        }
+                    }
+                    whereBuffer.append("\n");
+                }
+                deleteMethodContext.append("\t<delete id=\""+methodInfo.methodName+"\" parameterMap=\""+getParameterMapId()+"\">\n");
+                deleteMethodContext.append("\t\tDELETE FROM "+beanTable.getTableName()+"\n");
+                deleteMethodContext.append(whereBuffer.toString());
+                deleteMethodContext.append("\t</delete>\n");
+            }
+        }
+        return deleteMethodContext.toString();
+    }
 
     /**
      * 将方法信息存入内存中
@@ -208,6 +387,7 @@ public class MapperFactory {
             this.paramColumnList = paramColumnList;
             this.whereColumnList = whereColumnList;
         }
+
     }
 
 }

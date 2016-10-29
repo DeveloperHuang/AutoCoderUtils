@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="E:\IntelliJWorkspace\AutoCoderUtils\test\com\huang\auto\coder\mapper">
+    <resultMap type="com.huang.auto.coder.bean.pojo.T_device_info"
+               id="t_device_infoResult">
+        <result property="GUID" column="GUID"/>
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="parentId" column="parentId"/>
+        <result property="pipeDaimeter" column="pipeDaimeter"/>
+        <result property="type" column="type"/>
+        <result property="districtCode" column="districtCode"/>
+        <result property="buildingCode" column="buildingCode"/>
+        <result property="layerCode" column="layerCode"/>
+        <result property="roomCode" column="roomCode"/>
+        <result property="departmentCode" column="departmentCode"/>
+        <result property="systemName" column="systemName"/>
+        <result property="systemId" column="systemId"/>
+        <result property="eName" column="eName"/>
+        <result property="eId" column="eId"/>
+        <result property="meterReadingTypeName" column="meterReadingTypeName"/>
+        <result property="meterPropertyName" column="meterPropertyName"/>
+        <result property="energy" column="energy"/>
+        <result property="meterReadingType" column="meterReadingType"/>
+        <result property="meterProperty" column="meterProperty"/>
+        <result property="meterRange" column="meterRange"/>
+        <result property="location" column="location"/>
+        <result property="installTime" column="installTime"/>
+        <result property="model" column="model"/>
+        <result property="factory" column="factory"/>
+        <result property="transformationRatio" column="transformationRatio"/>
+        <result property="hourThreshold" column="hourThreshold"/>
+        <result property="dayThreshold" column="dayThreshold"/>
+        <result property="monthThreshold" column="monthThreshold"/>
+        <result property="initialValue" column="initialValue"/>
+        <result property="totalValue" column="totalValue"/>
+        <result property="maxValue" column="maxValue"/>
+        <result property="currValue" column="currValue"/>
+        <result property="ip" column="ip"/>
+        <result property="ele_id" column="ele_id"/>
+        <result property="typeName" column="typeName"/>
+        <result property="level" column="level"/>
+        <result property="lastReadTime" column="lastReadTime"/>
+        <result property="firmType" column="firmType"/>
+        <result property="port" column="port"/>
+        <result property="order" column="order"/>
+        <result property="eui" column="eui"/>
+        <result property="alarmFlag" column="alarmFlag"/>
+    </resultMap>
+    <parameterMap id="t_device_infoParam"
+                  type="com.huang.auto.coder.bean.pojo.T_device_info">
+        <parameter property="GUID" jdbcType="VARCHAR" />
+        <parameter property="id" jdbcType="VARCHAR" />
+        <parameter property="name" jdbcType="VARCHAR" />
+        <parameter property="parentId" jdbcType="VARCHAR" />
+        <parameter property="pipeDaimeter" jdbcType="VARCHAR" />
+        <parameter property="type" jdbcType="VARCHAR" />
+        <parameter property="districtCode" jdbcType="INTEGER" />
+        <parameter property="buildingCode" jdbcType="INTEGER" />
+        <parameter property="layerCode" jdbcType="INTEGER" />
+        <parameter property="roomCode" jdbcType="INTEGER" />
+        <parameter property="departmentCode" jdbcType="INTEGER" />
+        <parameter property="systemName" jdbcType="VARCHAR" />
+        <parameter property="systemId" jdbcType="VARCHAR" />
+        <parameter property="eName" jdbcType="VARCHAR" />
+        <parameter property="eId" jdbcType="VARCHAR" />
+        <parameter property="meterReadingTypeName" jdbcType="VARCHAR" />
+        <parameter property="meterPropertyName" jdbcType="VARCHAR" />
+        <parameter property="energy" jdbcType="VARCHAR" />
+        <parameter property="meterReadingType" jdbcType="VARCHAR" />
+        <parameter property="meterProperty" jdbcType="VARCHAR" />
+        <parameter property="meterRange" jdbcType="VARCHAR" />
+        <parameter property="location" jdbcType="VARCHAR" />
+        <parameter property="installTime" jdbcType="DATE" />
+        <parameter property="model" jdbcType="VARCHAR" />
+        <parameter property="factory" jdbcType="VARCHAR" />
+        <parameter property="transformationRatio" jdbcType="VARCHAR" />
+        <parameter property="hourThreshold" jdbcType="VARCHAR" />
+        <parameter property="dayThreshold" jdbcType="VARCHAR" />
+        <parameter property="monthThreshold" jdbcType="VARCHAR" />
+        <parameter property="initialValue" jdbcType="DOUBLE" />
+        <parameter property="totalValue" jdbcType="DOUBLE" />
+        <parameter property="maxValue" jdbcType="DOUBLE" />
+        <parameter property="currValue" jdbcType="DOUBLE" />
+        <parameter property="ip" jdbcType="VARCHAR" />
+        <parameter property="ele_id" jdbcType="INTEGER" />
+        <parameter property="typeName" jdbcType="VARCHAR" />
+        <parameter property="level" jdbcType="INTEGER" />
+        <parameter property="lastReadTime" jdbcType="DATE" />
+        <parameter property="firmType" jdbcType="INTEGER" />
+        <parameter property="port" jdbcType="INTEGER" />
+        <parameter property="order" jdbcType="INTEGER" />
+        <parameter property="eui" jdbcType="VARCHAR" />
+        <parameter property="alarmFlag" jdbcType="null" />
+    </parameterMap>
+    <select id="selectMethodById" resultMap="t_device_infoResult">
+        SELECT GUID,id,name,parentId,pipeDaimeter
+        FROM t_device_info
+        WHERE id = #{id}
+    </select>
+    <insert id="insertMethod" parameterMap="t_device_infoParam">
+        INSERT INTO t_device_info(GUID,id,name,parentId,pipeDaimeter)
+        VALUES(#{GUID},#{id},#{name},#{parentId},#{pipeDaimeter})
+    </insert>
+    <update id="updateMethodById" parameterMap="t_device_infoParam">
+        UPDATE t_device_info
+        SET GUID = #{GUID},id = #{id},name = #{name},parentId = #{parentId},pipeDaimeter = #{pipeDaimeter}
+        WHERE id = #{id}
+    </update>
+    <delete id="deleteMethodById" parameterMap="t_device_infoParam">
+        DELETE FROM t_device_info
+        WHERE id = #{id}
+    </delete>
+</mapper>

@@ -24,14 +24,14 @@ public class PackageFactoryTest {
 
     /** 
     * 
-    * Method: builderJavaPackageByFile(File file) 
+    * Method: builderPackageByFile(File file)
     * 
     */ 
     @Test
     public void testBuilderJavaPackageByFile() {
         File file = new File("abc"+File.separator+"ds"+File.separator+"src"+File.separator+"ds"+File.separator+"src"
                 +File.separator+"com"+File.separator+"name"+File.separator+"da.java");
-        String packageMessage = JavaClassTransverter.builderJavaPackageByFile(file);
+        String packageMessage = JavaClassTransverter.builderPackageByFile(file);
         System.out.println(packageMessage);
     }
 

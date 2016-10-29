@@ -168,7 +168,7 @@ public class BeanSwing extends JFrame{
             File file = fileChooseUtils.saveDirectory(BeanSwing.this,chooseLocalButton);
             if(file != null){
                 localUrlTextField.setText(file.getPath());
-                String packageMessage = JavaClassTransverter.builderJavaPackageByFile(file);
+                String packageMessage = JavaClassTransverter.builderPackageByFile(file);
                 packageTextField.setText(packageMessage);
                 refreshBeanText.doClick();
             }

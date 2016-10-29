@@ -401,7 +401,7 @@ public class MapperSwing {
             if(chooseTableComboBox.getSelectedIndex() >= 0){
                 String tableName = (String) chooseTableComboBox.getSelectedItem();
                 String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Mapper";
-                String packageMessage = JavaClassTransverter.builderJavaPackageByFile(file);
+                String packageMessage = JavaClassTransverter.builderPackageByFile(file);
                 mapperClassNameTextField.setText(className);
                 mapperPackageTextField.setText(packageMessage);
             }
@@ -417,7 +417,7 @@ public class MapperSwing {
             if(chooseTableComboBox.getSelectedIndex() >= 0){
                 String tableName = (String) chooseTableComboBox.getSelectedItem();
                 String className = StringTransverter.initialUpperCaseTransvert(tableName)+"MapperTest";
-                String packageMessage = JavaClassTransverter.builderJavaPackageByFile(file);
+                String packageMessage = JavaClassTransverter.builderPackageByFile(file);
                 testMapperClassNameTextField.setText(className);
                 testMapperPackageTextField.setText(packageMessage);
             }
@@ -433,7 +433,7 @@ public class MapperSwing {
             if(chooseTableComboBox.getSelectedIndex() >= 0){
                 String tableName = (String) chooseTableComboBox.getSelectedItem();
                 String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Service";
-                String packageMessage = JavaClassTransverter.builderJavaPackageByFile(file);
+                String packageMessage = JavaClassTransverter.builderPackageByFile(file);
                 serviceClassNameTextField.setText(className);
                 servicePackageTextField.setText(packageMessage);
             }
@@ -449,7 +449,7 @@ public class MapperSwing {
             if(chooseTableComboBox.getSelectedIndex() >= 0){
                 String tableName = (String) chooseTableComboBox.getSelectedItem();
                 String className = StringTransverter.initialUpperCaseTransvert(tableName)+"ServiceTest";
-                String packageMessage = JavaClassTransverter.builderJavaPackageByFile(file);
+                String packageMessage = JavaClassTransverter.builderPackageByFile(file);
                 testServiceClassNameTextField.setText(className);
                 testServicePackageTextField.setText(packageMessage);
             }
