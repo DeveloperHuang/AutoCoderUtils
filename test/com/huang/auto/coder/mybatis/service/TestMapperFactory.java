@@ -1,9 +1,11 @@
 package com.huang.auto.coder.mybatis.service;
 
 import com.huang.auto.coder.mybatis.swing.MethodEnum;
+import com.huang.auto.coder.utils.Column;
 import com.huang.auto.coder.utils.DataBaseTableUtils;
 import com.huang.auto.coder.utils.SwingConsole;
 import com.huang.auto.coder.utils.Table;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,26 +28,34 @@ public class TestMapperFactory {
 
     @Before
     public void init(){
-        beanfile = new File("E:\\IntelliJWorkspace\\AutoCoderUtils\\test\\com\\huang\\auto\\coder\\bean\\pojo\\T_device_info.java");
-        saveDirectory = new File("E:\\IntelliJWorkspace\\AutoCoderUtils\\test\\com\\huang\\auto\\coder\\mapper");
+
+        beanfile = new File("E:\\IntelliJWorkspace\\AutoCoderUtils\\autoSrc\\com\\huang\\auto\\pojo\\Demo.java");
+        saveDirectory = new File("E:\\IntelliJWorkspace\\AutoCoderUtils\\autoSrc\\com\\huang\\auto\\mapper");
         dataBaseTableUtils = new DataBaseTableUtils("localhost","root","root");
-        table = dataBaseTableUtils.loadTableInfomation("energymgr","t_device_info");
-        interfaceName = "T_device_infoMapper";
+        table = dataBaseTableUtils.loadTableInfomation("autocode","demo");
+        interfaceName = "DemoMapper";
         mapperFactory = new MapperFactory(saveDirectory,interfaceName,beanfile,table);
         initMethod();
     }
 
     public void initMethod(){
         List<String> paramList = new ArrayList<String>();
+        List<String> paramListNoId = new ArrayList<String>();
         List<String> whereList = new ArrayList<String>();
         whereList.add("id");
-        for(int i = 0; i < 5 ;i++){
-            paramList.add(table.getColumns().get(i).getFieldName());
+        for(Column column : table.getColumns()){
+            paramList.add(column.getFieldName());
+            if(!"id".equals(column.getFieldName())){
+                paramListNoId.add(column.getFieldName());
+            }
         }
-        mapperFactory.addMethod(MethodEnum.SELECT,"selectMethodById",paramList,whereList);
-        mapperFactory.addMethod(MethodEnum.INSERT,"insertMethod",paramList,whereList);
-        mapperFactory.addMethod(MethodEnum.UPDATE,"updateMethodById",paramList,whereList);
-        mapperFactory.addMethod(MethodEnum.DELETE,"deleteMethodById",paramList,whereList);
+
+
+        mapperFactory.addMethod(MethodEnum.SELECT,"selectDemoById",paramList,whereList);
+        mapperFactory.addMethod(MethodEnum.SELECT,"selectAllDemos",paramList,null);
+        mapperFactory.addMethod(MethodEnum.INSERT,"insertDemo",paramListNoId,null);
+        mapperFactory.addMethod(MethodEnum.UPDATE,"updateDemoById",paramListNoId,whereList);
+        mapperFactory.addMethod(MethodEnum.DELETE,"deleteDemoById",null,whereList);
     }
 
 

@@ -25,7 +25,7 @@ public class JavaBeanTransverter {
         reflectTypeMap.put("varchar","String");
         reflectTypeMap.put("bigint","Long");
         reflectTypeMap.put("text","String");
-        reflectTypeMap.put("char","String");
+        reflectTypeMap.put("char","Character");
         reflectTypeMap.put("date","Date");
         reflectTypeMap.put("time","Date");
         reflectTypeMap.put("year","Integer");

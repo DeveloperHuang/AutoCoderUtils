@@ -37,7 +37,7 @@ public class MapperFactory {
     static {
         jdbcTypeMap.put("int","INTEGER");
         jdbcTypeMap.put("double","DOUBLE");
-        jdbcTypeMap.put("float","Float");
+        jdbcTypeMap.put("float","FLOAT");
         jdbcTypeMap.put("varchar","VARCHAR");
         jdbcTypeMap.put("bigint","BIGINT");
         jdbcTypeMap.put("text","VARCHAR");
@@ -130,8 +130,13 @@ public class MapperFactory {
                     break;
             }
             for(MethodInfo methodInfo : methodInfoList){
-                methodContext.append("\tpublic "+resultContext+" "+methodInfo.methodName
-                        +"("+beanClassName+" "+ StringTransverter.initialLowerCaseTransvert(beanClassName)+");\n");
+                if(methodEnum == MethodEnum.SELECT &&
+                        (methodInfo.whereColumnList == null || methodInfo.whereColumnList.size() == 0)){
+                    methodContext.append("\tpublic "+resultContext+" "+methodInfo.methodName+"();\n");
+                }else{
+                    methodContext.append("\tpublic "+resultContext+" "+methodInfo.methodName
+                            +"("+beanClassName+" "+ StringTransverter.initialLowerCaseTransvert(beanClassName)+");\n");
+                }
             }
         }
         return methodContext.toString();
@@ -141,8 +146,9 @@ public class MapperFactory {
         StringBuffer xmlContext = new StringBuffer();
 
         xmlContext.append(XML_HEAD);
-        String packageContext = JavaClassTransverter.builderPackageContextByFile(saveDirectory);
-        xmlContext.append("<mapper namespace=\""+saveDirectory+"\">\n");
+        String packageContext = JavaClassTransverter.builderPackageContextByFile(saveDirectory)+"."
+                +interfaceName;
+        xmlContext.append("<mapper namespace=\""+packageContext+"\">\n");
         //TODO 待生成的内容如下
 
 //          1:resultMap
@@ -237,7 +243,12 @@ public class MapperFactory {
                     whereBuffere.append("\n");
                 }
                 //***************构造WHERE内容完毕******************
-                selectMethodContext.append("\t<select id=\""+methodInfo.methodName+"\" resultMap=\""+getResultMapId()+"\">\n");
+                String paramMap = "";
+                if(methodInfo.whereColumnList != null && methodInfo.whereColumnList.size() > 0){
+                    paramMap = " parameterMap=\""+getParameterMapId()+"\"";
+                }
+                selectMethodContext.append("\t<select id=\""+methodInfo.methodName+"\" resultMap=\""+getResultMapId()+"\""
+                +paramMap+">\n");
                 selectMethodContext.append("\t\tSELECT "+paramBuffer.toString()+"\n");
                 selectMethodContext.append("\t\tFROM "+beanTable.getTableName()+"\n");
                 selectMethodContext.append(whereBuffere.toString());

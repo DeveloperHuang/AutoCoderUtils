@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE configuration 
+    PUBLIC "-//mybatis.org//DTD Config 3.0//EN" 
+    "mybatis-3-config.dtd">
+<configuration> 
+	<!-- 
+		数据源配置在spring容器上下文中配置。
+		见文件:WebRoot/WEB-INF/context/global-context.xml
+	 -->
+    <settings> 
+        <setting name="useGeneratedKeys" value="true" /> 
+        <setting name="defaultExecutorType" value="REUSE" />
+        <!-- 
+        	声明进行关联对象『不』按需要加载，因为所需的对象内容已经在select语句中限定。
+        	启用延迟加载将导致产生的代理对象无法正常被Flex客户端反序列化。
+         --> 
+        <setting name="lazyLoadingEnabled" value="false"/>
+        <!-- 声明进行关联对象属性『不』按需要加载 -->
+        <setting name="aggressiveLazyLoading" value="true"/>
+    </settings> 
+    
+    <typeAliases> 
+    </typeAliases> 
+</configuration> 

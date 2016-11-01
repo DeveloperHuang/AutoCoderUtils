@@ -10,6 +10,9 @@ public class JavaClassTransverter {
 
     public static final String SRC_PATH = File.separator+"src"+File.separator;
     public static final String TEST_PATH = File.separator+"test"+File.separator;
+    public static final String AUTO_TEST_PATH = File.separator+"autoSrc"+File.separator;
+
+    public static final String[] SRC_PATHS = new String[] {SRC_PATH,TEST_PATH,AUTO_TEST_PATH};
 
     /**
      * 获取完整的package语句
@@ -48,11 +51,15 @@ public class JavaClassTransverter {
         }
 
         String sourceDir = "";
-        if(path.contains(SRC_PATH)){
-            sourceDir = SRC_PATH;
-        }else if(path.contains(TEST_PATH)){
-            sourceDir = TEST_PATH;
-        }else{
+        boolean findSource = false;
+        for(String srcPath : SRC_PATHS){
+            if(path.contains(srcPath)){
+                sourceDir = srcPath;
+                findSource = true;
+                break;
+            }
+        }
+        if(!findSource){
             return null;
         }
         int lastIndex = path.lastIndexOf(sourceDir);
