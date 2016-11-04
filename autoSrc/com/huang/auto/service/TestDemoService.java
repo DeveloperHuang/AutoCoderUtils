@@ -1,4 +1,4 @@
-package com.huang.auto.mapper;
+package com.huang.auto.service;
 
 import com.huang.auto.pojo.Demo;
 import com.huang.auto.utils.SpringUtils;
@@ -10,24 +10,23 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by JianQiu on 2016/11/1.
+ * Created by JianQiu on 2016/11/2.
  */
-public class TestDemoMapper {
+public class TestDemoService {
 
-    private DemoMapper mapper ;
+    private DemoService service;
 
     @Before
     public void init(){
-        mapper = SpringUtils.getBean(DemoMapper.class);
+        service = SpringUtils.getBean(DemoService.class);
     }
-
 
     @Test
     public void testDeleteDemoById(){
         Demo demo = new Demo();
-        demo.setId(3);
-        mapper.deleteDemoById(demo);
-        TestSelectAllDemo();
+        demo.setId(6);
+        service.deleteDemoById(demo);
+        testSelectAllDemo();
     }
 
     @Test
@@ -37,7 +36,7 @@ public class TestDemoMapper {
 
         Demo demo = new Demo();
         demo.setName("张三");
-        mapper.insertDemo(demo);
+        service.insertDemo(demo);
 
         demo.setName("李四");
         demo.setTInt(123);
@@ -54,35 +53,34 @@ public class TestDemoMapper {
         demo.setTDatetime(now);
         demo.setTTimestamp(now);
         demo.setTLongText("LongText");
-        mapper.insertDemo(demo);
-        TestSelectAllDemo();
+        service.insertDemo(demo);
+        testSelectAllDemo();
 
     }
 
     @Test
     public void testUpdateDemoById(){
         Demo demo = new Demo();
-        demo.setId(3);
+        demo.setId(6);
         demo.setTChar('z');
         demo.setTVarchar("updateVarchar");
-        mapper.updateDemoById(demo);
-        TestSelectAllDemo();
+        service.updateDemoById(demo);
+        testSelectAllDemo();
     }
 
     @Test
     public void testSelectDemoById(){
         Demo demo = new Demo();
         demo.setId(1);
-        List<Demo> demoList = mapper.selectDemoById(demo);
+        List<Demo> demoList = service.selectDemoById(demo);
         TestUtils.showList(demoList);
     }
 
     @Test
-    public void TestSelectAllDemo(){
-        List<Demo> demoList = mapper.selectAllDemos();
+    public void testSelectAllDemo(){
+        List<Demo> demoList = service.selectAllDemos();
         TestUtils.showList(demoList);
     }
-
 
 
 }

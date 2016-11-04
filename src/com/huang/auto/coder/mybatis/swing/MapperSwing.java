@@ -1,5 +1,7 @@
 package com.huang.auto.coder.mybatis.swing;
 
+import com.huang.auto.coder.mybatis.service.BaseFactory;
+import com.huang.auto.coder.mybatis.service.MapperFactory;
 import com.huang.auto.coder.utils.*;
 
 import javax.swing.*;
@@ -78,7 +80,12 @@ public class MapperSwing {
 
     private DataBaseTableUtils dataBaseTableUtils;
     private FileChooseUtils fileChooseUtils;
-    private File lastChooseBeanFile ;
+    private File defaultDirector;
+
+    private File chooseBeanFile;
+    private File mapperSaveDirector;
+    private File serviceSaveDirector;
+
     //每个方法类型对应方法组
     private Map<MethodEnum,RadioPanelGroupManager> methodListGroupManagerMap;
     //每个方法对应的参数组
@@ -90,7 +97,7 @@ public class MapperSwing {
     private SQLMethodButtonListener sqlMethodButtonListener = new SQLMethodButtonListener();
 
     //当前表信息
-    private Table table;
+    private Table currBeanTable;
     private Map<String,String> columnMap;
     private MethodEnum currMethodEnum = MethodEnum.SELECT;//
 
@@ -115,18 +122,11 @@ public class MapperSwing {
      */
 
     public MapperSwing() {
-        sqlPanel = new SQLPanel();
-        fileChooseUtils = new FileChooseUtils();
-        methodListGroupManagerMap = new HashMap<MethodEnum, RadioPanelGroupManager>();
-        parameterListGroupManagerMap = new HashMap<RadioPanelGroupManager.RadioPanelContainer, CheckBoxPanelGroupManager>();
-        whereListGroupManagerMap = new HashMap<RadioPanelGroupManager.RadioPanelContainer, CheckBoxPanelGroupManager>();
-
 //        refreshSQLPanelDialog();
 //        MenuPanel.men
         initConfig();
         initListener();
         initSQLDialog();
-
     }
 
     private void initListener() {
@@ -154,6 +154,12 @@ public class MapperSwing {
     }
 
     public void initConfig(){
+        sqlPanel = new SQLPanel();
+        fileChooseUtils = new FileChooseUtils();
+        methodListGroupManagerMap = new HashMap<MethodEnum, RadioPanelGroupManager>();
+        parameterListGroupManagerMap = new HashMap<RadioPanelGroupManager.RadioPanelContainer, CheckBoxPanelGroupManager>();
+        whereListGroupManagerMap = new HashMap<RadioPanelGroupManager.RadioPanelContainer, CheckBoxPanelGroupManager>();
+
         String address = PropertiesUtils.getPropertiesValue("address","db");
         String username = PropertiesUtils.getPropertiesValue("username","db");
         String password = PropertiesUtils.getPropertiesValue("password","db");
@@ -162,7 +168,8 @@ public class MapperSwing {
         passwordTextField.setText(password);
 
         columnMap = new HashMap<String, String>();
-        lastChooseBeanFile = new File("E:\\IntelliJWorkspace\\AutoCoderUtils\\test\\com\\huang\\auto\\coder\\bean\\pojo");
+        defaultDirector = new File(PropertiesUtils.getPropertiesValue("director.default","config"));
+        fileChooseUtils.setDefaultDirectory(defaultDirector);
     }
 
 
@@ -301,12 +308,16 @@ public class MapperSwing {
 
     public CheckBoxPanelGroupManager createColumnPanelGroupManager(){
         CheckBoxPanelGroupManager checkBoxPanelGroupManager = new CheckBoxPanelGroupManager();
-        if(table != null){
-            for(Column column : table.getColumns()){
+        if(currBeanTable != null){
+            for(Column column : currBeanTable.getColumns()){
                 checkBoxPanelGroupManager.creatCheckBoxPanel(new JLabel(column.getFieldName()));
             }
         }
         return checkBoxPanelGroupManager;
+    }
+
+    public void addAllMethodsToFactory(BaseFactory factory){
+
     }
 
 
@@ -366,10 +377,10 @@ public class MapperSwing {
             if(e.getStateChange() == ItemEvent.SELECTED){
                 String tableName = e.getItem().toString();
                 String dataBaseName = chooseDataBaseComboBox.getSelectedItem().toString();
-                table = dataBaseTableUtils.loadTableInfomation(dataBaseName,tableName);
+                currBeanTable = dataBaseTableUtils.loadTableInfomation(dataBaseName,tableName);
                 //column快速匹配
                 columnMap.clear();
-                for(Column column : table.getColumns()){
+                for(Column column : currBeanTable.getColumns()){
                     columnMap.put(column.getFieldName(),column.getFieldType());
                 }
                 clearMethodManager();
@@ -384,9 +395,9 @@ public class MapperSwing {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            File file = fileChooseUtils.selectedFile(MapperSwing.this.mainPanel,chooseBeanButton,lastChooseBeanFile);
-            lastChooseBeanFile = file.getParentFile();
+            File file = fileChooseUtils.selectedFile(MapperSwing.this.mainPanel,chooseBeanButton, chooseBeanFile);
             if(file != null){
+                chooseBeanFile = file.getParentFile();
                 beanFilePathTextField.setText(file.getName());
             }
         }
@@ -397,13 +408,28 @@ public class MapperSwing {
         @Override
         public void actionPerformed(ActionEvent e) {
             File file = fileChooseUtils.saveDirectory(MapperSwing.this.mainPanel,chooseMapperSaveLocalButton);
-            mapperSaveLocalTextField.setText(file.getPath());
-            if(chooseTableComboBox.getSelectedIndex() >= 0){
-                String tableName = (String) chooseTableComboBox.getSelectedItem();
-                String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Mapper";
-                String packageMessage = JavaClassTransverter.builderPackageByFile(file);
-                mapperClassNameTextField.setText(className);
-                mapperPackageTextField.setText(packageMessage);
+            if(file != null){
+                mapperSaveDirector = file;
+                mapperSaveLocalTextField.setText(mapperSaveDirector.getPath());
+                if(chooseTableComboBox.getSelectedIndex() >= 0){
+                    String tableName = (String) chooseTableComboBox.getSelectedItem();
+                    String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Mapper";
+                    String packageMessage = JavaClassTransverter.builderPackageByFile(mapperSaveDirector);
+                    mapperClassNameTextField.setText(className);
+                    mapperPackageTextField.setText(packageMessage);
+                }
+            }
+        }
+    }
+
+    class MapperSaveButtonListener implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(mapperSaveDirector != null && chooseBeanFile != null && currBeanTable != null){
+                String interfaceName = mapperClassNameTextField.getText();
+                MapperFactory mapperFactory = new MapperFactory(mapperSaveDirector,interfaceName,chooseBeanFile,currBeanTable);
+
+
             }
         }
     }
@@ -412,14 +438,16 @@ public class MapperSwing {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            File file = fileChooseUtils.saveDirectory(MapperSwing.this.mainPanel,chooseTestMapperLocalButton);
-            testMapperSaveLocalTextField.setText(file.getPath());
-            if(chooseTableComboBox.getSelectedIndex() >= 0){
-                String tableName = (String) chooseTableComboBox.getSelectedItem();
-                String className = StringTransverter.initialUpperCaseTransvert(tableName)+"MapperTest";
-                String packageMessage = JavaClassTransverter.builderPackageByFile(file);
-                testMapperClassNameTextField.setText(className);
-                testMapperPackageTextField.setText(packageMessage);
+            File file = fileChooseUtils.saveDirectory(MapperSwing.this.mainPanel, chooseTestMapperLocalButton);
+            if(file != null){
+                testMapperSaveLocalTextField.setText(file.getPath());
+                if(chooseTableComboBox.getSelectedIndex() >= 0){
+                    String tableName = (String) chooseTableComboBox.getSelectedItem();
+                    String className = StringTransverter.initialUpperCaseTransvert(tableName)+"MapperTest";
+                    String packageMessage = JavaClassTransverter.builderPackageByFile(file);
+                    testMapperClassNameTextField.setText(className);
+                    testMapperPackageTextField.setText(packageMessage);
+                }
             }
         }
     }
@@ -428,14 +456,17 @@ public class MapperSwing {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            File file = fileChooseUtils.saveDirectory(MapperSwing.this.mainPanel,chooseServiceSaveLocalButton);
-            serviceSaveLocalTextField.setText(file.getPath());
-            if(chooseTableComboBox.getSelectedIndex() >= 0){
-                String tableName = (String) chooseTableComboBox.getSelectedItem();
-                String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Service";
-                String packageMessage = JavaClassTransverter.builderPackageByFile(file);
-                serviceClassNameTextField.setText(className);
-                servicePackageTextField.setText(packageMessage);
+            File file = fileChooseUtils.saveDirectory(MapperSwing.this.mainPanel, chooseServiceSaveLocalButton);
+            if(file != null){
+                serviceSaveDirector = file;
+                serviceSaveLocalTextField.setText(serviceSaveDirector.getPath());
+                if(chooseTableComboBox.getSelectedIndex() >= 0){
+                    String tableName = (String) chooseTableComboBox.getSelectedItem();
+                    String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Service";
+                    String packageMessage = JavaClassTransverter.builderPackageByFile(serviceSaveDirector);
+                    serviceClassNameTextField.setText(className);
+                    servicePackageTextField.setText(packageMessage);
+                }
             }
         }
     }
@@ -444,14 +475,16 @@ public class MapperSwing {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            File file = fileChooseUtils.saveDirectory(MapperSwing.this.mainPanel,chooseTestServiceLocalButton);
-            testServiceSaveLocalTextField.setText(file.getPath());
-            if(chooseTableComboBox.getSelectedIndex() >= 0){
-                String tableName = (String) chooseTableComboBox.getSelectedItem();
-                String className = StringTransverter.initialUpperCaseTransvert(tableName)+"ServiceTest";
-                String packageMessage = JavaClassTransverter.builderPackageByFile(file);
-                testServiceClassNameTextField.setText(className);
-                testServicePackageTextField.setText(packageMessage);
+            File file = fileChooseUtils.saveDirectory(MapperSwing.this.mainPanel, chooseTestServiceLocalButton);
+            if(file != null){
+                testServiceSaveLocalTextField.setText(file.getPath());
+                if(chooseTableComboBox.getSelectedIndex() >= 0){
+                    String tableName = (String) chooseTableComboBox.getSelectedItem();
+                    String className = StringTransverter.initialUpperCaseTransvert(tableName)+"ServiceTest";
+                    String packageMessage = JavaClassTransverter.builderPackageByFile(file);
+                    testServiceClassNameTextField.setText(className);
+                    testServicePackageTextField.setText(packageMessage);
+                }
             }
         }
     }

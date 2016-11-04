@@ -2,6 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.huang.auto.mapper.DemoMapper">
+
     <resultMap type="com.huang.auto.pojo.Demo"
                id="demoResult">
         <result property="id" column="id"/>
@@ -20,6 +21,7 @@
         <result property="tTimestamp" column="tTimestamp"/>
         <result property="tLongText" column="tLongText"/>
     </resultMap>
+
     <parameterMap id="demoParam"
                   type="com.huang.auto.pojo.Demo">
         <parameter property="id" jdbcType="INTEGER" />
@@ -38,6 +40,7 @@
         <parameter property="tTimestamp" jdbcType="DATE" />
         <parameter property="tLongText" jdbcType="VARCHAR" />
     </parameterMap>
+
     <select id="selectDemoById" resultMap="demoResult" parameterMap="demoParam">
         SELECT id,name,tInt,tDouble,tFloat,tVarchar,tBigint,tText,tChar,tDate,tTime,tYear,tDatetime,tTimestamp,tLongText
         FROM demo
@@ -47,17 +50,21 @@
         SELECT id,name,tInt,tDouble,tFloat,tVarchar,tBigint,tText,tChar,tDate,tTime,tYear,tDatetime,tTimestamp,tLongText
         FROM demo
     </select>
+
     <insert id="insertDemo" parameterMap="demoParam">
         INSERT INTO demo(name,tInt,tDouble,tFloat,tVarchar,tBigint,tText,tChar,tDate,tTime,tYear,tDatetime,tTimestamp,tLongText)
         VALUES(#{name},#{tInt},#{tDouble},#{tFloat},#{tVarchar},#{tBigint},#{tText},#{tChar},#{tDate},#{tTime},#{tYear},#{tDatetime},#{tTimestamp},#{tLongText})
     </insert>
+
     <update id="updateDemoById" parameterMap="demoParam">
         UPDATE demo
         SET name = #{name},tInt = #{tInt},tDouble = #{tDouble},tFloat = #{tFloat},tVarchar = #{tVarchar},tBigint = #{tBigint},tText = #{tText},tChar = #{tChar},tDate = #{tDate},tTime = #{tTime},tYear = #{tYear},tDatetime = #{tDatetime},tTimestamp = #{tTimestamp},tLongText = #{tLongText}
         WHERE id = #{id}
     </update>
+
     <delete id="deleteDemoById" parameterMap="demoParam">
         DELETE FROM demo
         WHERE id = #{id}
     </delete>
+
 </mapper>

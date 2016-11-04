@@ -5,7 +5,6 @@ import com.huang.auto.coder.utils.Column;
 import com.huang.auto.coder.utils.DataBaseTableUtils;
 import com.huang.auto.coder.utils.SwingConsole;
 import com.huang.auto.coder.utils.Table;
-import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,25 +15,30 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by JianQiu on 2016/10/29.
+ * Created by JianQiu on 2016/11/2.
  */
-public class TestMapperFactory {
+public class TestServiceMapper {
+
     DataBaseTableUtils dataBaseTableUtils ;
     private File beanfile;
-    private File saveDirectory;
+    private File mapperSaveDirectory;
+    private File serviceSaveDirectory;
     private Table table ;
-    private String interfaceName;
-    private MapperFactory mapperFactory;
+    private String mapperInterfaceName;
+    private String serviceInterfaceName;
+    private ServiceFactory serviceFactory;
 
     @Before
     public void init(){
 
         beanfile = new File("E:\\IntelliJWorkspace\\AutoCoderUtils\\autoSrc\\com\\huang\\auto\\pojo\\Demo.java");
-        saveDirectory = new File("E:\\IntelliJWorkspace\\AutoCoderUtils\\autoSrc\\com\\huang\\auto\\mapper");
+        mapperSaveDirectory = new File("E:\\IntelliJWorkspace\\AutoCoderUtils\\autoSrc\\com\\huang\\auto\\mapper");
+        serviceSaveDirectory = new File("E:\\IntelliJWorkspace\\AutoCoderUtils\\autoSrc\\com\\huang\\auto\\service");
         dataBaseTableUtils = new DataBaseTableUtils("localhost","root","root");
         table = dataBaseTableUtils.loadTableInfomation("autocode","demo");
-        interfaceName = "DemoMapper";
-        mapperFactory = new MapperFactory(saveDirectory,interfaceName,beanfile,table);
+        mapperInterfaceName = "DemoMapper";
+        serviceInterfaceName = "DemoService";
+        serviceFactory = new ServiceFactory(serviceSaveDirectory,serviceInterfaceName,mapperSaveDirectory, mapperInterfaceName,beanfile,table);
         initMethod();
     }
 
@@ -50,18 +54,16 @@ public class TestMapperFactory {
             }
         }
 
-
-        mapperFactory.addMethod(MethodEnum.SELECT,"selectDemoById",paramList,whereList);
-        mapperFactory.addMethod(MethodEnum.SELECT,"selectAllDemos",paramList,null);
-        mapperFactory.addMethod(MethodEnum.INSERT,"insertDemo",paramListNoId,null);
-        mapperFactory.addMethod(MethodEnum.UPDATE,"updateDemoById",paramListNoId,whereList);
-        mapperFactory.addMethod(MethodEnum.DELETE,"deleteDemoById",null,whereList);
+        serviceFactory.addMethod(MethodEnum.SELECT,"selectDemoById",paramList,whereList);
+        serviceFactory.addMethod(MethodEnum.SELECT,"selectAllDemos",paramList,null);
+        serviceFactory.addMethod(MethodEnum.INSERT,"insertDemo",paramListNoId,null);
+        serviceFactory.addMethod(MethodEnum.UPDATE,"updateDemoById",paramListNoId,whereList);
+        serviceFactory.addMethod(MethodEnum.DELETE,"deleteDemoById",null,whereList);
     }
-
 
     @Test
     public void testGetInterfaceContext(){
-        String interfaceContext = mapperFactory.getInterfaceContext();
+        String interfaceContext = serviceFactory.getInterfaceContext();
         showMessage(interfaceContext);
         try {
             TimeUnit.HOURS.sleep(1);
@@ -71,16 +73,15 @@ public class TestMapperFactory {
     }
 
     @Test
-    public void testGetXMLContext(){
-        String xmlContext = mapperFactory.getXMLContext();
-        showMessage(xmlContext);
+    public void testGetInterfaceMethodContext(){
+        String implementsContext = serviceFactory.getImplementsContext();
+        showMessage(implementsContext);
         try {
             TimeUnit.HOURS.sleep(1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
-
 
     private void showMessage(String message){
         int width = 1400;
@@ -94,6 +95,5 @@ public class TestMapperFactory {
         jFrame.setContentPane(textArea);
         SwingConsole.run(jFrame,width,height);
     }
-
 
 }

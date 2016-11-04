@@ -11,9 +11,9 @@ import java.util.Map;
  */
 public class FileChooseUtils {
 
-    public Map<Object,File> lastOpenDirectoryMap = new HashMap<Object,File>();
-    public Map<Object,File> lastSaveDirectoryMap = new HashMap<Object,File>();
-    public File defaultDirectory;
+    private Map<Object,File> lastOpenDirectoryMap = new HashMap<Object,File>();
+    private Map<Object,File> lastSaveDirectoryMap = new HashMap<Object,File>();
+    private File defaultDirectory;
     /**
      * 选择文件
      * @param parentPanel 所属Panel
@@ -26,6 +26,10 @@ public class FileChooseUtils {
             currentDirectory = lastOpenDirectoryMap.get(belongObject);
         }
         return selectedFile(parentPanel,belongObject,currentDirectory);
+    }
+
+    public void setDefaultDirectory(File defaultDirectory){
+        this.defaultDirectory = defaultDirectory;
     }
 
     /**
