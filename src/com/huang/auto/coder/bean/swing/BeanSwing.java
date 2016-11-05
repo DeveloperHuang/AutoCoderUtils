@@ -6,6 +6,7 @@ import com.huang.auto.coder.utils.*;
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -48,12 +49,16 @@ public class BeanSwing extends JFrame{
     private FileChooseUtils fileChooseUtils ;
     private DataBaseTableUtils dataBaseTableUtils;
 
+    private File beanSaveDirectory;
+    private File defaultDirector;
+
     public BeanSwing(){
         chooseLocalButton.addActionListener(new ChooseLocalButtonListener());
         chooseDataBaseComboBox.addItemListener(new DataBaseComboBoxItemStateListener());
         chooseTableComboBox.addItemListener(new TableComboBoxItemStateListener());
         connectButtion.addActionListener(new ConnectButtionListener());
         refreshBeanText.addActionListener(new RefreshTextButtonListener());
+        SaveButton.addActionListener(new SaveButtonListener());
 
         String address = PropertiesUtils.getPropertiesValue("address","db");
         String username = PropertiesUtils.getPropertiesValue("username","db");
@@ -62,6 +67,8 @@ public class BeanSwing extends JFrame{
         usernameField.setText(username);
         passwordField.setText(password);
         passwordField.addKeyListener(new PasswordKeyAdapter());
+
+        defaultDirector = new File(PropertiesUtils.getPropertiesValue("director.default","config"));
     }
 
 
@@ -164,9 +171,11 @@ public class BeanSwing extends JFrame{
         public void actionPerformed(ActionEvent e) {
             if(fileChooseUtils == null ){
                 fileChooseUtils = new FileChooseUtils();
+                fileChooseUtils.setDefaultDirectory(defaultDirector);
             }
             File file = fileChooseUtils.saveDirectory(BeanSwing.this,chooseLocalButton);
             if(file != null){
+                beanSaveDirectory = file;
                 localUrlTextField.setText(file.getPath());
                 String packageMessage = JavaClassTransverter.builderPackageByFile(file);
                 packageTextField.setText(packageMessage);
@@ -213,6 +222,22 @@ public class BeanSwing extends JFrame{
             String className = classNameTextField.getText();
             String tableName = chooseTableComboBox.getSelectedItem().toString();
             fillBeanTextAreaFromDataBase(packageMessage,className,dataBaseName,tableName);
+        }
+    }
+
+    class SaveButtonListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String beanFilePath = beanSaveDirectory.getPath()+File.separator+classNameTextField.getText()+".java";
+            File beanFile = new File(beanFilePath);
+            try {
+                FileIOUtils.writeJavaFile(beanFile,BeanTextArea.getText());
+                showDialogMessage("保存Bean文件成功：");
+            } catch (IOException e1) {
+                showDialogMessage("保存Bean文件失败：");
+                e1.printStackTrace();
+            }
         }
     }
 

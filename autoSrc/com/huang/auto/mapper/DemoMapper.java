@@ -4,6 +4,9 @@ import java.util.List;
 import com.huang.auto.pojo.Demo;
 
 
+
+
+
 public interface DemoMapper {
 
     public void deleteDemoById(Demo demo);

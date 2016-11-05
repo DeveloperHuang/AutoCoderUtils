@@ -13,8 +13,11 @@ import java.util.Map;
 /**
  * Created by JianQiu on 2016/11/2.
  */
-public abstract class BaseFactory {
+public abstract class MyBatisCodeBuildFactory {
     public static final String IMPORT_LIST = "import java.util.List;";
+    public static final String IMPORT_SERVICE = "import org.springframework.stereotype.Service;";
+    public static final String IMPORT_AUTOWIRED = "import org.springframework.beans.factory.annotation.Autowired;";
+
     protected File saveDirectory;
     protected String interfaceName;
     protected File beanFile;
@@ -29,7 +32,7 @@ public abstract class BaseFactory {
      * @param beanFile JavaBean文件
      * @param beanTable bean对应的Table信息
      */
-    public BaseFactory(File saveDirectory, String interfaceName, File beanFile, Table beanTable) {
+    public MyBatisCodeBuildFactory(File saveDirectory, String interfaceName, File beanFile, Table beanTable) {
         this.saveDirectory = saveDirectory;
         this.interfaceName = interfaceName;
         this.beanFile = beanFile;

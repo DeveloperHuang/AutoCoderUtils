@@ -6,10 +6,10 @@ import javax.swing.*;
  * Created by JianQiu on 2016/10/10.
  */
 public class SQLPanel {
-    private JButton saveAllButton;
+    private JButton triggerAllWhere;
     private JButton addButton;
     private JButton deleteButton;
-    private JButton saveCurrButton;
+    private JButton triggerAllParam;
     private JPanel methodPanel;
     private JPanel methodListPanel;
     private JPanel methodManagerPanel;
@@ -29,12 +29,12 @@ public class SQLPanel {
         this.methodList = methodList;
     }
 
-    public JButton getSaveAllButton() {
-        return saveAllButton;
+    public JButton getTriggerAllWhere() {
+        return triggerAllWhere;
     }
 
-    public void setSaveAllButton(JButton saveAllButton) {
-        this.saveAllButton = saveAllButton;
+    public void setTriggerAllWhere(JButton triggerAllWhere) {
+        this.triggerAllWhere = triggerAllWhere;
     }
 
     public JButton getAddButton() {
@@ -53,12 +53,12 @@ public class SQLPanel {
         this.deleteButton = deleteButton;
     }
 
-    public JButton getSaveCurrButton() {
-        return saveCurrButton;
+    public JButton getTriggerAllParam() {
+        return triggerAllParam;
     }
 
-    public void setSaveCurrButton(JButton saveCurrButton) {
-        this.saveCurrButton = saveCurrButton;
+    public void setTriggerAllParam(JButton triggerAllParam) {
+        this.triggerAllParam = triggerAllParam;
     }
 
     public JPanel getMethodPanel() {

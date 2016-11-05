@@ -1,16 +1,19 @@
 package com.huang.auto.coder.mybatis.swing;
 
-import com.huang.auto.coder.mybatis.service.BaseFactory;
-import com.huang.auto.coder.mybatis.service.MapperFactory;
+import com.huang.auto.coder.mybatis.service.MyBatisCodeBuildFactory;
+import com.huang.auto.coder.mybatis.service.MapperBuildFactory;
+import com.huang.auto.coder.mybatis.service.ServiceBuildFactory;
 import com.huang.auto.coder.utils.*;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.util.HashMap;
+import java.io.IOException;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by huang on 2016/10/6.
@@ -42,7 +45,7 @@ public class MapperSwing {
     private JLabel testMapperSaveLocalLabel;
     private JTextField mapperPackageTextField;
     private JLabel mapperPackageLabel;
-    private JButton mapperSaveButton;
+    private JButton saveMapperButton;
     private JTextField testMapperClassNameTextField;
     private JTextField testMapperPackageTextField;
     private JButton saveTestMapperButton;
@@ -93,7 +96,7 @@ public class MapperSwing {
     //每个方法对应的条件组
     private Map<RadioPanelGroupManager.RadioPanelContainer,CheckBoxPanelGroupManager> whereListGroupManagerMap;
 
-    private MethodRadioActionListener radioActionListener = new MethodRadioActionListener();
+    private MethodRadioChangeListener radioChangeListener = new MethodRadioChangeListener();
     private SQLMethodButtonListener sqlMethodButtonListener = new SQLMethodButtonListener();
 
     //当前表信息
@@ -138,8 +141,10 @@ public class MapperSwing {
 
         chooseBeanButton.addActionListener(new ChooseBeanButtonListener());
         chooseMapperSaveLocalButton.addActionListener(new ChooseMapperButtonListener());
+        saveMapperButton.addActionListener(new SaveMapperButtonListener());
         chooseTestMapperLocalButton.addActionListener(new ChooseTestMapperButtonListener());
         chooseServiceSaveLocalButton.addActionListener(new ChooseServiceButtonListener());
+        saveServiceButton.addActionListener(new SaveServiceButtonListener());
         chooseTestServiceLocalButton.addActionListener(new ChooseTestServiceButtonListener());
 
         SELECTButton.addActionListener(sqlMethodButtonListener);
@@ -149,8 +154,14 @@ public class MapperSwing {
 
         JButton addButton = sqlPanel.getAddButton();
         JButton deleteButton = sqlPanel.getDeleteButton();
+        JButton triggerAllParamButton = sqlPanel.getTriggerAllParam();
+        JButton triggerAllWhereButton = sqlPanel.getTriggerAllWhere();
+
         addButton.addActionListener(new AddButtonActionListener());
         deleteButton.addActionListener(new DeleteButtonActionListener());
+        triggerAllParamButton.addActionListener(new TriggerAllParamButtonActionListener());
+        triggerAllWhereButton.addActionListener(new TriggerAllWhereButtonActionListener());
+
     }
 
     public void initConfig(){
@@ -316,8 +327,32 @@ public class MapperSwing {
         return checkBoxPanelGroupManager;
     }
 
-    public void addAllMethodsToFactory(BaseFactory factory){
+    /**
+     * 给MyBatis代码构建工厂添加方法信息
+     * @param buildFactory 实现了Mybatis构建工厂的实例
+     */
+    public void addAllMethodsToFactory(MyBatisCodeBuildFactory buildFactory){
+        Set<MethodEnum> methodEnumSet = methodListGroupManagerMap.keySet();
+        for(MethodEnum methodEnum : methodEnumSet){
+            RadioPanelGroupManager methodGroupManager = methodListGroupManagerMap.get(methodEnum);
+            List<RadioPanelGroupManager.RadioPanelContainer> methodContainerList = methodGroupManager.getAllPanelContainer();
+            for(RadioPanelGroupManager.RadioPanelContainer methodContainer : methodContainerList){
+                List<String> paramColumns = getSelectedColumnList(parameterListGroupManagerMap.get(methodContainer));
+                List<String> whereColumns = getSelectedColumnList(whereListGroupManagerMap.get(methodContainer));
+                JTextField methodNameField = (JTextField) methodContainer.getComponent();
+                buildFactory.addMethod(methodEnum,methodNameField.getText(),paramColumns,whereColumns);
+            }
+        }
+    }
 
+    public List<String> getSelectedColumnList(CheckBoxPanelGroupManager manager){
+        List<Component> columnListLable =manager.getSelectedComponent();
+        List<String> columnList = new ArrayList<String>();
+        for(Component component : columnListLable){
+            JLabel label = (JLabel) component;
+            columnList.add(label.getText());
+        }
+        return columnList;
     }
 
 
@@ -397,7 +432,7 @@ public class MapperSwing {
         public void actionPerformed(ActionEvent e) {
             File file = fileChooseUtils.selectedFile(MapperSwing.this.mainPanel,chooseBeanButton, chooseBeanFile);
             if(file != null){
-                chooseBeanFile = file.getParentFile();
+                chooseBeanFile = file;
                 beanFilePathTextField.setText(file.getName());
             }
         }
@@ -422,14 +457,25 @@ public class MapperSwing {
         }
     }
 
-    class MapperSaveButtonListener implements ActionListener{
+    class SaveMapperButtonListener implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e) {
             if(mapperSaveDirector != null && chooseBeanFile != null && currBeanTable != null){
                 String interfaceName = mapperClassNameTextField.getText();
-                MapperFactory mapperFactory = new MapperFactory(mapperSaveDirector,interfaceName,chooseBeanFile,currBeanTable);
-
-
+                MapperBuildFactory mapperBuildFactory = new MapperBuildFactory(mapperSaveDirector,interfaceName,chooseBeanFile,currBeanTable);
+                addAllMethodsToFactory(mapperBuildFactory);
+                String mapperInterfacePath = mapperSaveDirector.getPath()+File.separator+interfaceName+".java";
+                String mapperXMLPath = mapperSaveDirector.getPath()+File.separator+interfaceName+".xml";
+                File mapperInterfaceFile = new File(mapperInterfacePath);
+                File mapperXMLFile = new File(mapperXMLPath);
+                try {
+                    FileIOUtils.writeJavaFile(mapperInterfaceFile,mapperBuildFactory.getInterfaceContext());
+                    FileIOUtils.writeJavaFile(mapperXMLFile,mapperBuildFactory.getXMLContext());
+                    sendDialogMessage("保存Mapper成功：");
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    sendDialogMessage("保存Mapper失败：");
+                }
             }
         }
     }
@@ -466,6 +512,31 @@ public class MapperSwing {
                     String packageMessage = JavaClassTransverter.builderPackageByFile(serviceSaveDirector);
                     serviceClassNameTextField.setText(className);
                     servicePackageTextField.setText(packageMessage);
+                }
+            }
+        }
+    }
+
+    class SaveServiceButtonListener implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(serviceSaveDirector != null && mapperSaveDirector != null && chooseBeanFile != null && currBeanTable != null){
+                String serviceInterfaceName = serviceClassNameTextField.getText();
+                String mapperInterfaceName = mapperClassNameTextField.getText();
+                ServiceBuildFactory serviceBuildFactory = new ServiceBuildFactory(serviceSaveDirector,serviceInterfaceName
+                        ,mapperSaveDirector,mapperInterfaceName,chooseBeanFile,currBeanTable);
+                addAllMethodsToFactory(serviceBuildFactory);
+                String serviceInterfacePath = serviceSaveDirector.getPath()+File.separator+serviceInterfaceName+".java";
+                String serviceImplementPath = serviceSaveDirector.getPath()+File.separator+serviceInterfaceName+"Impl.java";
+                File serviceInterfaceFile = new File(serviceInterfacePath);
+                File serviceImplementFile = new File(serviceImplementPath);
+                try {
+                    FileIOUtils.writeJavaFile(serviceInterfaceFile,serviceBuildFactory.getInterfaceContext());
+                    FileIOUtils.writeJavaFile(serviceImplementFile,serviceBuildFactory.getImplementsContext());
+                    sendDialogMessage("保存Service成功：");
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    sendDialogMessage("保存Service失败：");
                 }
             }
         }
@@ -522,7 +593,7 @@ public class MapperSwing {
                     currMethodManager.creatRadionPanel(methodTextField);
 
             //添加监听事件
-            addMethodPanelContainer.getRadioButton().addActionListener(radioActionListener);
+            addMethodPanelContainer.getRadioButton().addChangeListener(radioChangeListener);
 
 //            JPanel methodListPanel = sqlPanel.getMethodListPanel();
 //            methodListPanel.add(radioPanelContainer.getPanel());
@@ -555,14 +626,52 @@ public class MapperSwing {
         }
     }
 
-    class MethodRadioActionListener implements ActionListener{
+
+
+    class MethodRadioChangeListener implements ChangeListener{
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            refreshSQLPanelDialog();
+        public void stateChanged(ChangeEvent e) {
+            JRadioButton jRadioButton = (JRadioButton) e.getSource();
+            if(jRadioButton.isSelected()){
+                refreshSQLPanelDialog();
+            }
         }
     }
 
+    class TriggerAllParamButtonActionListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RadioPanelGroupManager radioPanelGroupManager = methodListGroupManagerMap.get(currMethodEnum);
+            RadioPanelGroupManager.RadioPanelContainer currMethodContainer = radioPanelGroupManager.getSelectedPanelContainer();
+            if(currMethodContainer != null){
+                CheckBoxPanelGroupManager paramGroupManager = parameterListGroupManagerMap.get(currMethodContainer);
+                List<JCheckBox> allCheckBox = paramGroupManager.getAllCheckBox();
+                for(JCheckBox checkBox : allCheckBox){
+                    checkBox.setSelected(!checkBox.isSelected());
+                }
+                refreshSQLPanelDialog();
+            }
+        }
+    }
+
+    class TriggerAllWhereButtonActionListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RadioPanelGroupManager radioPanelGroupManager = methodListGroupManagerMap.get(currMethodEnum);
+            RadioPanelGroupManager.RadioPanelContainer currMethodContainer = radioPanelGroupManager.getSelectedPanelContainer();
+            if(currMethodContainer != null){
+                CheckBoxPanelGroupManager whereGroupManager = whereListGroupManagerMap.get(currMethodContainer);
+                List<JCheckBox> allCheckBox = whereGroupManager.getAllCheckBox();
+                for(JCheckBox checkBox : allCheckBox){
+                    checkBox.setSelected(!checkBox.isSelected());
+                }
+                refreshSQLPanelDialog();
+            }
+        }
+    }
     public static void main(String[] args) {
         JFrame frame = new JFrame("MapperSwing");
         frame.setContentPane(new MapperSwing().mainPanel);

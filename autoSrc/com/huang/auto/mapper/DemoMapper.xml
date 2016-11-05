@@ -3,6 +3,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.huang.auto.mapper.DemoMapper">
 
+
+
+
     <resultMap type="com.huang.auto.pojo.Demo"
                id="demoResult">
         <result property="id" column="id"/>

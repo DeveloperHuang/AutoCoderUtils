@@ -27,7 +27,7 @@ import java.util.*;
  *  3.3：生成UPDATE方法（目前只支持参数对象）
  *  3.4：生成DELETE方法（目前只支持参数对象）
  */
-public class MapperFactory extends BaseFactory {
+public class MapperBuildFactory extends MyBatisCodeBuildFactory {
 
     private static final String XML_HEAD = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<!DOCTYPE mapper PUBLIC \"-//mybatis.org//DTD Mapper 3.0//EN\" \n" +
@@ -56,7 +56,7 @@ public class MapperFactory extends BaseFactory {
      * @param beanFile JavaBean文件
      * @param beanTable bean对应的Table信息
      */
-    public MapperFactory(File saveDirectory, String interfaceName, File beanFile, Table beanTable) {
+    public MapperBuildFactory(File saveDirectory, String interfaceName, File beanFile, Table beanTable) {
         super(saveDirectory,interfaceName,beanFile,beanTable);
     }
 
@@ -178,7 +178,6 @@ public class MapperFactory extends BaseFactory {
                 "\t\ttype=\""+packageContext+"\">\n");
         List<Column> columnList = beanTable.getColumns();
         for(Column column : columnList){
-            //TODO 编写jdbcType和数据库type的对应关系
             String jdbcType = jdbcTypeMap.get(column.getFieldType());
             parameterMapContext.append("\t\t<parameter property=\""+column.getFieldName()
                     +"\" jdbcType=\""+jdbcType+"\" />\n");

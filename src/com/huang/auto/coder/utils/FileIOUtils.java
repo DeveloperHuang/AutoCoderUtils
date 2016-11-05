@@ -12,7 +12,7 @@ public class FileIOUtils {
     }
 
     /**
-     * 写文件
+     * 写文件(如果该文件不存在，创建该文件，如果该文件已经存在，则重写该文件)
      * @param file 待写文件
      * @param message 待写入信息
      * @param encoding 文件编码格式

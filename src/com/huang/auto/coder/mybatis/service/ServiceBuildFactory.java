@@ -1,7 +1,6 @@
 package com.huang.auto.coder.mybatis.service;
 
 import com.huang.auto.coder.mybatis.swing.MethodEnum;
-import com.huang.auto.coder.utils.Column;
 import com.huang.auto.coder.utils.JavaClassTransverter;
 import com.huang.auto.coder.utils.StringTransverter;
 import com.huang.auto.coder.utils.Table;
@@ -12,12 +11,12 @@ import java.util.*;
 /**
  * Created by JianQiu on 2016/11/2.
  */
-public class ServiceFactory extends BaseFactory {
+public class ServiceBuildFactory extends MyBatisCodeBuildFactory {
 
     private File mapperSaveDirectory;
     private String mapperInterface;
 
-    public ServiceFactory(File saveDirectory, String interfaceName, File mapperSaveDirectory
+    public ServiceBuildFactory(File saveDirectory, String interfaceName, File mapperSaveDirectory
             , String mapperInterface, File beanFile, Table beanTable) {
         super(saveDirectory, interfaceName, beanFile, beanTable);
         this.mapperSaveDirectory = mapperSaveDirectory;
@@ -93,11 +92,14 @@ public class ServiceFactory extends BaseFactory {
                 + "." + mapperInterface + ";\n";
         String packageMessage = JavaClassTransverter.builderPackageByFile(saveDirectory);
 
-        String head = packageMessage + "\n\n" + IMPORT_LIST + "\n" + import_mapper + import_bean + "\n\n";
-        String mapperParameter = "private " + mapperInterface + " "
+        String head = packageMessage + "\n\n" + IMPORT_LIST + "\n" +IMPORT_SERVICE+"\n"+IMPORT_AUTOWIRED+"\n"
+                + import_mapper + import_bean + "\n\n";
+
+        String mapperParameter = "\t@Autowired\n\tprivate " + mapperInterface + " "
                 + StringTransverter.initialLowerCaseTransvert(mapperInterface) + ";\n";
 
         implementsContext.append(head);
+        implementsContext.append("@Service(\""+StringTransverter.initialLowerCaseTransvert(interfaceName)+"\")\n");
         implementsContext.append("public class " + interfaceName + "Impl implements " + interfaceName + "{\n\n");
         implementsContext.append(mapperParameter);
         implementsContext.append("\n");

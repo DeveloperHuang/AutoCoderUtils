@@ -5,7 +5,6 @@ import com.huang.auto.coder.utils.Column;
 import com.huang.auto.coder.utils.DataBaseTableUtils;
 import com.huang.auto.coder.utils.SwingConsole;
 import com.huang.auto.coder.utils.Table;
-import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,7 +23,7 @@ public class TestMapperFactory {
     private File saveDirectory;
     private Table table ;
     private String interfaceName;
-    private MapperFactory mapperFactory;
+    private MapperBuildFactory mapperFactory;
 
     @Before
     public void init(){
@@ -34,7 +33,7 @@ public class TestMapperFactory {
         dataBaseTableUtils = new DataBaseTableUtils("localhost","root","root");
         table = dataBaseTableUtils.loadTableInfomation("autocode","demo");
         interfaceName = "DemoMapper";
-        mapperFactory = new MapperFactory(saveDirectory,interfaceName,beanfile,table);
+        mapperFactory = new MapperBuildFactory(saveDirectory,interfaceName,beanfile,table);
         initMethod();
     }
 

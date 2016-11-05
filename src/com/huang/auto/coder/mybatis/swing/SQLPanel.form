@@ -18,16 +18,16 @@
         <constraints/>
         <properties>
           <background color="-3942680"/>
-          <preferredSize width="405" height="600"/>
+          <preferredSize width="470" height="600"/>
         </properties>
         <border type="none"/>
         <children>
-          <component id="37cc7" class="javax.swing.JButton" binding="saveAllButton" default-binding="true">
+          <component id="37cc7" class="javax.swing.JButton" binding="triggerAllWhere">
             <constraints>
               <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="saveAll"/>
+              <text value="当前条件组：全切换"/>
             </properties>
           </component>
           <component id="bc24d" class="javax.swing.JButton" binding="addButton" default-binding="true">
@@ -46,19 +46,19 @@
               <text value="delete"/>
             </properties>
           </component>
-          <component id="b950a" class="javax.swing.JButton" binding="saveCurrButton">
+          <component id="b950a" class="javax.swing.JButton" binding="triggerAllParam">
             <constraints>
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="saveCurr"/>
+              <text value="当前参数组：全切换"/>
             </properties>
           </component>
           <grid id="1a651" binding="methodListPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
             <constraints>
               <grid row="0" column="1" row-span="4" col-span="2" vsize-policy="3" hsize-policy="7" anchor="8" fill="2" indent="0" use-parent-layout="false">
                 <minimum-size width="300" height="-1"/>
-                <preferred-size width="300" height="300"/>
+                <preferred-size width="300" height="600"/>
               </grid>
             </constraints>
             <properties>

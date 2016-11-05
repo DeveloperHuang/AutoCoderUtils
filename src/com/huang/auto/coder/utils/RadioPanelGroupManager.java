@@ -134,7 +134,8 @@ public class RadioPanelGroupManager {
             Collection<RadioPanelContainer> containers = panelContainerMap.values();
             for (RadioPanelContainer container : containers) {
                 if(container.getComponent() == component){
-                    container.getRadioButton().doClick();
+                    container.getRadioButton().setSelected(true);
+                    container.getPanel().updateUI();
                     break;
                 }
             }

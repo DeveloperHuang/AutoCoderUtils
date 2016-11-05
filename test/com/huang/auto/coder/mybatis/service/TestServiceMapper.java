@@ -26,7 +26,7 @@ public class TestServiceMapper {
     private Table table ;
     private String mapperInterfaceName;
     private String serviceInterfaceName;
-    private ServiceFactory serviceFactory;
+    private ServiceBuildFactory serviceFactory;
 
     @Before
     public void init(){
@@ -38,7 +38,7 @@ public class TestServiceMapper {
         table = dataBaseTableUtils.loadTableInfomation("autocode","demo");
         mapperInterfaceName = "DemoMapper";
         serviceInterfaceName = "DemoService";
-        serviceFactory = new ServiceFactory(serviceSaveDirectory,serviceInterfaceName,mapperSaveDirectory, mapperInterfaceName,beanfile,table);
+        serviceFactory = new ServiceBuildFactory(serviceSaveDirectory,serviceInterfaceName,mapperSaveDirectory, mapperInterfaceName,beanfile,table);
         initMethod();
     }
 
@@ -73,7 +73,7 @@ public class TestServiceMapper {
     }
 
     @Test
-    public void testGetInterfaceMethodContext(){
+    public void testGetImplementsContext(){
         String implementsContext = serviceFactory.getImplementsContext();
         showMessage(implementsContext);
         try {
