@@ -1,12 +1,11 @@
 package com.huang.auto.coder.utils;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by JianQiu on 2016/10/15.
@@ -16,7 +15,7 @@ public class CheckBoxPanelGroupManager {
 
     private Map<JCheckBox,CheckBoxPanelContainer> panelContainerMap = new LinkedHashMap<JCheckBox, CheckBoxPanelContainer>();
     private Map<JCheckBox,Boolean> selectedCheckBoxMap = new LinkedHashMap<JCheckBox, Boolean>();
-    private CheckBoxActionListener selectedListener = new CheckBoxActionListener();
+    private CheckBoxSelectedListener selectedListener = new CheckBoxSelectedListener();
 
     public CheckBoxPanelGroupManager(){
 
@@ -30,7 +29,7 @@ public class CheckBoxPanelGroupManager {
     public CheckBoxPanelContainer creatCheckBoxPanel(Component component){
         JPanel panel = new JPanel(new FlowLayout());
         JCheckBox checkBox = new JCheckBox();
-        checkBox.addActionListener(selectedListener);
+        checkBox.addChangeListener(selectedListener);
         CheckBoxPanelContainer panelContainer = new CheckBoxPanelContainer(panel,checkBox,component);
 
         panelContainerMap.put(checkBox,panelContainer);
@@ -159,10 +158,10 @@ public class CheckBoxPanelGroupManager {
     }
 
 
-    class CheckBoxActionListener implements ActionListener{
+    class CheckBoxSelectedListener implements ChangeListener{
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void stateChanged(ChangeEvent e) {
             JCheckBox checkBox = (JCheckBox) e.getSource();
             if(checkBox.isSelected()){
                 selectedCheckBoxMap.put(checkBox,true);
@@ -175,7 +174,7 @@ public class CheckBoxPanelGroupManager {
     public void clear(){
         panelContainerMap.clear();
         selectedCheckBoxMap.clear();
-        selectedListener = new CheckBoxActionListener();
+        selectedListener = new CheckBoxSelectedListener();
     }
 
     public class CheckBoxPanelContainer {
