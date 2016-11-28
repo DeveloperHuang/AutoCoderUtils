@@ -18,7 +18,6 @@ public class CheckBoxPanelGroupManager {
     private CheckBoxSelectedListener selectedListener = new CheckBoxSelectedListener();
 
     public CheckBoxPanelGroupManager(){
-
     }
 
     /**
