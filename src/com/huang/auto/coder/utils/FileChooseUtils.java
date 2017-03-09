@@ -89,6 +89,7 @@ public class FileChooseUtils {
         }
         int option = fileChooser.showOpenDialog(parentPanel);
         if(option == JFileChooser.APPROVE_OPTION){
+            //因为选择的是目录，而不是打开目录后确定。因此还是将下次打开的目录设置为选中的父级
             File directory = fileChooser.getCurrentDirectory();
             lastOpenDirectoryMap.put(belongObject,directory);
             defaultDirectory = directory;

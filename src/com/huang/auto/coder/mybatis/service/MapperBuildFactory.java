@@ -290,7 +290,7 @@ public class MapperBuildFactory extends MyBatisCodeBuildFactory {
                 updateMethodContext.append("\t\tUPDATE "+beanTable.getTableName()+"\n");
                 updateMethodContext.append("\t\tSET "+paramBuffer.toString()+"\n");
                 updateMethodContext.append(whereSQLContext);
-                updateMethodContext.append("\t\t</update>\n");
+                updateMethodContext.append("\t</update>\n");
             }
         }
         return updateMethodContext;
