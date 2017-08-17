@@ -1,6 +1,10 @@
-package com.huang.auto.coder.bean.swing;
+package com.huang.auto.coder.swing.bean;
 
-import com.huang.auto.coder.bean.service.JavaBeanTransverter;
+import com.huang.auto.coder.factory.JavaBeanFactory;
+import com.huang.auto.coder.factory.JavaClassContextGenerator;
+import com.huang.auto.coder.factory.pojo.Table;
+import com.huang.auto.coder.swing.DialogMessageUtils;
+import com.huang.auto.coder.swing.SwingConsole;
 import com.huang.auto.coder.utils.*;
 
 import javax.swing.*;
@@ -50,7 +54,6 @@ public class BeanSwing extends JFrame{
     private DataBaseTableUtils dataBaseTableUtils;
 
     private File beanSaveDirectory;
-    private File defaultDirector;
 
     public BeanSwing(){
         chooseLocalButton.addActionListener(new ChooseLocalButtonListener());
@@ -68,7 +71,6 @@ public class BeanSwing extends JFrame{
         passwordField.setText(password);
         passwordField.addKeyListener(new PasswordKeyAdapter());
 
-        defaultDirector = new File(PropertiesUtils.getPropertiesValue("director.default","config"));
     }
 
 
@@ -103,7 +105,7 @@ public class BeanSwing extends JFrame{
 
     public void fillBeanTextAreaFromDataBase(String packageMessage,String className,String dataBaseName,String tableName){
         Table table = dataBaseTableUtils.loadTableInfomation(dataBaseName,tableName);
-        String message = JavaBeanTransverter.transverterBeanClassString(packageMessage,className,table);
+        String message = JavaBeanFactory.generateBeanClassString(packageMessage,className,table);
         rewriteBeanText(message);
     }
 
@@ -171,13 +173,12 @@ public class BeanSwing extends JFrame{
         public void actionPerformed(ActionEvent e) {
             if(fileChooseUtils == null ){
                 fileChooseUtils = new FileChooseUtils();
-                fileChooseUtils.setDefaultDirectory(defaultDirector);
             }
             File file = fileChooseUtils.saveDirectory(BeanSwing.this,chooseLocalButton);
             if(file != null){
                 beanSaveDirectory = file;
                 localUrlTextField.setText(file.getPath());
-                String packageMessage = JavaClassTransverter.builderPackageByFile(file);
+                String packageMessage = JavaClassContextGenerator.generatePackageByFile(file);
                 packageTextField.setText(packageMessage);
                 refreshBeanText.doClick();
             }

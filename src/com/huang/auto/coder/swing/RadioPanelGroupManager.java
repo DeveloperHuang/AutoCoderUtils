@@ -1,4 +1,4 @@
-package com.huang.auto.coder.utils;
+package com.huang.auto.coder.swing;
 
 
 import javax.swing.*;

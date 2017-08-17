@@ -1,8 +1,9 @@
-package com.huang.auto.coder.mybatis.service;
+package com.huang.auto.coder.factory;
 
-import com.huang.auto.coder.mybatis.swing.MethodEnum;
-import com.huang.auto.coder.utils.Column;
-import com.huang.auto.coder.utils.Table;
+import com.huang.auto.coder.factory.pojo.Method;
+import com.huang.auto.coder.swing.mybatis.MethodEnum;
+import com.huang.auto.coder.factory.pojo.Column;
+import com.huang.auto.coder.factory.pojo.Table;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.Map;
 /**
  * Created by JianQiu on 2016/11/2.
  */
-public abstract class MyBatisCodeBuildFactory {
+public abstract class ContextGenerateFactory {
     public static final String IMPORT_LIST = "import java.util.List;";
     public static final String IMPORT_SERVICE = "import org.springframework.stereotype.Service;";
     public static final String IMPORT_AUTOWIRED = "import org.springframework.beans.factory.annotation.Autowired;";
@@ -23,7 +24,7 @@ public abstract class MyBatisCodeBuildFactory {
     protected File beanFile;
     protected Table beanTable;
     protected Map<String,Column> tableColumnMap;
-    protected Map<MethodEnum,List<MethodInfo>> methodInfoListMap;
+    protected Map<MethodEnum,List<Method>> methodInfoListMap;
 
     /**
      * 内容生成工厂
@@ -32,13 +33,13 @@ public abstract class MyBatisCodeBuildFactory {
      * @param beanFile JavaBean文件
      * @param beanTable bean对应的Table信息
      */
-    public MyBatisCodeBuildFactory(File saveDirectory, String interfaceName, File beanFile, Table beanTable) {
+    public ContextGenerateFactory(File saveDirectory, String interfaceName, File beanFile, Table beanTable) {
         this.saveDirectory = saveDirectory;
         this.interfaceName = interfaceName;
         this.beanFile = beanFile;
         this.beanTable = beanTable;
 
-        methodInfoListMap = new HashMap<MethodEnum,List<MethodInfo>>();
+        methodInfoListMap = new HashMap<MethodEnum,List<Method>>();
         tableColumnMap = new HashMap<String, Column>();
         for(Column column : beanTable.getColumns()){
             tableColumnMap.put(column.getFieldName(),column);
@@ -61,24 +62,24 @@ public abstract class MyBatisCodeBuildFactory {
         if(whereList != null){
             whereColumnList = getColumnListByNameList(whereList);
         }
-        MethodInfo methodInfo = new MethodInfo(methodName,paramColumnList,whereColumnList);
-        addMethodInfo(methodEnum,methodInfo);
+        Method method = new Method(methodName,paramColumnList,whereColumnList);
+        addMethodInfo(methodEnum, method);
     }
 
     /**
      * 将方法信息存入内存中
      * @param methodEnum 方法类型
-     * @param methodInfo 方法信息
+     * @param method 方法信息
      */
-    private void addMethodInfo(MethodEnum methodEnum ,MethodInfo methodInfo){
-        List<MethodInfo> methodInfoList ;
+    private void addMethodInfo(MethodEnum methodEnum ,Method method){
+        List<Method> methodList;
         if(methodInfoListMap.containsKey(methodEnum)){
-            methodInfoList = methodInfoListMap.get(methodEnum);
+            methodList = methodInfoListMap.get(methodEnum);
         }else{
-            methodInfoList = new ArrayList<>();
-            methodInfoListMap.put(methodEnum,methodInfoList);
+            methodList = new ArrayList<>();
+            methodInfoListMap.put(methodEnum, methodList);
         }
-        methodInfoList.add(methodInfo);
+        methodList.add(method);
     }
 
     /**

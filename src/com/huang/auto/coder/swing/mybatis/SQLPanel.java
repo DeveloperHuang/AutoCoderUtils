@@ -1,4 +1,4 @@
-package com.huang.auto.coder.mybatis.swing;
+package com.huang.auto.coder.swing.mybatis;
 
 import javax.swing.*;
 

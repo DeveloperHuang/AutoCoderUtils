@@ -1,9 +1,9 @@
-package com.huang.auto.coder.bean.service;
+package com.huang.auto.coder.factory;
 
-import com.huang.auto.coder.utils.Column;
-import com.huang.auto.coder.utils.Table;
+import com.huang.auto.coder.factory.pojo.Column;
+import com.huang.auto.coder.utils.StringTransverter;
+import com.huang.auto.coder.factory.pojo.Table;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Created by huang on 2016/10/6.
  */
-public class JavaBeanTransverter {
+public class JavaBeanFactory {
 
     /**
      * key 为DataBaseType
@@ -25,7 +25,7 @@ public class JavaBeanTransverter {
         reflectTypeMap.put("varchar","String");
         reflectTypeMap.put("bigint","Long");
         reflectTypeMap.put("text","String");
-        reflectTypeMap.put("char","Character");
+        reflectTypeMap.put("char","String");
         reflectTypeMap.put("date","Date");
         reflectTypeMap.put("time","Date");
         reflectTypeMap.put("year","Integer");
@@ -35,12 +35,13 @@ public class JavaBeanTransverter {
     }
 
 
-    public static String transverterBeanClassString(String packageMessage, String className, Table table){
+    public static String generateBeanClassString(String packageMessage, String className, Table table){
 
         StringBuffer head = new StringBuffer();
-
+        head.append("import java.io.Serializable;\n");
         StringBuffer methodMessage = new StringBuffer();
         StringBuffer attributeMessage = new StringBuffer();
+        attributeMessage.append("private static final long serialVersionUID = 1L;\n");
 
         List<Column> columnList = table.getColumns();
         if(columnList != null){
@@ -51,17 +52,19 @@ public class JavaBeanTransverter {
                     head.append("import java.util.Date;\n");
                     alreadyAddDateImport = true;
                 }
-                methodMessage.append(transverterBeanMethodString(column.getFieldName(),javaType));
-                attributeMessage.append(transverterBeanAttributeString(column.getFieldName(),javaType));
+                String fieldName = StringTransverter.lowerCamelCase(column.getFieldName());
+                methodMessage.append(generateBeanMethodString(fieldName,javaType));
+                attributeMessage.append(generateBeanAttributeString(fieldName,javaType));
             }
 
         }
 
-        String classMessage = packageMessage+"\n\n"+head+"\n\npublic class "+className+"{\n"+attributeMessage+"\n"+methodMessage+"\n}";
+        String classMessage = packageMessage+"\n\n"+head+"\n\npublic class "+className+
+                " implements Serializable{\n"+attributeMessage+"\n"+methodMessage+"\n}";
         return classMessage;
     }
 
-    private static String transverterBeanMethodString(String fieldName,String javaType){
+    private static String generateBeanMethodString(String fieldName, String javaType){
         String fieldMethodName;
         if(fieldName.length() > 1){
             fieldMethodName = fieldName.substring(0,1).toUpperCase()+fieldName.substring(1);
@@ -84,7 +87,7 @@ public class JavaBeanTransverter {
      * @param javaType
      * @return
      */
-    private static String transverterBeanAttributeString(String fieldName,String javaType){
+    private static String generateBeanAttributeString(String fieldName, String javaType){
         return "\tprivate "+javaType+" "+fieldName+";\n";
     }
 

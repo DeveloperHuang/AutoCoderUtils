@@ -14,6 +14,12 @@ public class FileChooseUtils {
     private Map<Object,File> lastOpenDirectoryMap = new HashMap<Object,File>();
     private Map<Object,File> lastSaveDirectoryMap = new HashMap<Object,File>();
     private File defaultDirectory;
+
+    public FileChooseUtils() {
+        String filePath = PropertiesUtils.getPropertiesValue("direct.default","config");
+        defaultDirectory = new File(filePath);
+    }
+
     /**
      * 选择文件
      * @param parentPanel 所属Panel

@@ -1,8 +1,15 @@
-package com.huang.auto.coder.mybatis.swing;
+package com.huang.auto.coder.swing.mybatis;
 
-import com.huang.auto.coder.mybatis.service.MyBatisCodeBuildFactory;
-import com.huang.auto.coder.mybatis.service.MapperBuildFactory;
-import com.huang.auto.coder.mybatis.service.ServiceBuildFactory;
+import com.huang.auto.coder.factory.ContextGenerateFactory;
+import com.huang.auto.coder.factory.JavaClassContextGenerator;
+import com.huang.auto.coder.factory.MapperGenerateFactory;
+import com.huang.auto.coder.factory.ServiceGenerateFactory;
+import com.huang.auto.coder.factory.pojo.Column;
+import com.huang.auto.coder.factory.pojo.Table;
+import com.huang.auto.coder.swing.CheckBoxPanelGroupManager;
+import com.huang.auto.coder.swing.DialogMessageUtils;
+import com.huang.auto.coder.swing.RadioPanelGroupManager;
+import com.huang.auto.coder.swing.SwingConsole;
 import com.huang.auto.coder.utils.*;
 
 import javax.swing.*;
@@ -83,7 +90,6 @@ public class MapperSwing {
 
     private DataBaseTableUtils dataBaseTableUtils;
     private FileChooseUtils fileChooseUtils;
-    private File defaultDirector;
 
     private File chooseBeanFile;
     private File mapperSaveDirector;
@@ -179,8 +185,6 @@ public class MapperSwing {
         passwordTextField.setText(password);
 
         columnMap = new HashMap<String, String>();
-        defaultDirector = new File(PropertiesUtils.getPropertiesValue("director.default","config"));
-        fileChooseUtils.setDefaultDirectory(defaultDirector);
     }
 
 
@@ -331,7 +335,7 @@ public class MapperSwing {
      * 给MyBatis代码构建工厂添加方法信息
      * @param buildFactory 实现了Mybatis构建工厂的实例
      */
-    public void addAllMethodsToFactory(MyBatisCodeBuildFactory buildFactory){
+    public void addAllMethodsToFactory(ContextGenerateFactory buildFactory){
         Set<MethodEnum> methodEnumSet = methodListGroupManagerMap.keySet();
         for(MethodEnum methodEnum : methodEnumSet){
             RadioPanelGroupManager methodGroupManager = methodListGroupManagerMap.get(methodEnum);
@@ -449,7 +453,7 @@ public class MapperSwing {
                 if(chooseTableComboBox.getSelectedIndex() >= 0){
                     String tableName = (String) chooseTableComboBox.getSelectedItem();
                     String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Mapper";
-                    String packageMessage = JavaClassTransverter.builderPackageByFile(mapperSaveDirector);
+                    String packageMessage = JavaClassContextGenerator.generatePackageByFile(mapperSaveDirector);
                     mapperClassNameTextField.setText(className);
                     mapperPackageTextField.setText(packageMessage);
                 }
@@ -462,7 +466,7 @@ public class MapperSwing {
         public void actionPerformed(ActionEvent e) {
             if(mapperSaveDirector != null && chooseBeanFile != null && currBeanTable != null){
                 String interfaceName = mapperClassNameTextField.getText();
-                MapperBuildFactory mapperBuildFactory = new MapperBuildFactory(mapperSaveDirector,interfaceName,chooseBeanFile,currBeanTable);
+                MapperGenerateFactory mapperBuildFactory = new MapperGenerateFactory(mapperSaveDirector,interfaceName,chooseBeanFile,currBeanTable);
                 addAllMethodsToFactory(mapperBuildFactory);
                 String mapperInterfacePath = mapperSaveDirector.getPath()+File.separator+interfaceName+".java";
                 String mapperXMLPath = mapperSaveDirector.getPath()+File.separator+interfaceName+".xml";
@@ -490,7 +494,7 @@ public class MapperSwing {
                 if(chooseTableComboBox.getSelectedIndex() >= 0){
                     String tableName = (String) chooseTableComboBox.getSelectedItem();
                     String className = StringTransverter.initialUpperCaseTransvert(tableName)+"MapperTest";
-                    String packageMessage = JavaClassTransverter.builderPackageByFile(file);
+                    String packageMessage = JavaClassContextGenerator.generatePackageByFile(file);
                     testMapperClassNameTextField.setText(className);
                     testMapperPackageTextField.setText(packageMessage);
                 }
@@ -509,7 +513,7 @@ public class MapperSwing {
                 if(chooseTableComboBox.getSelectedIndex() >= 0){
                     String tableName = (String) chooseTableComboBox.getSelectedItem();
                     String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Service";
-                    String packageMessage = JavaClassTransverter.builderPackageByFile(serviceSaveDirector);
+                    String packageMessage = JavaClassContextGenerator.generatePackageByFile(serviceSaveDirector);
                     serviceClassNameTextField.setText(className);
                     servicePackageTextField.setText(packageMessage);
                 }
@@ -523,7 +527,7 @@ public class MapperSwing {
             if(serviceSaveDirector != null && mapperSaveDirector != null && chooseBeanFile != null && currBeanTable != null){
                 String serviceInterfaceName = serviceClassNameTextField.getText();
                 String mapperInterfaceName = mapperClassNameTextField.getText();
-                ServiceBuildFactory serviceBuildFactory = new ServiceBuildFactory(serviceSaveDirector,serviceInterfaceName
+                ServiceGenerateFactory serviceBuildFactory = new ServiceGenerateFactory(serviceSaveDirector,serviceInterfaceName
                         ,mapperSaveDirector,mapperInterfaceName,chooseBeanFile,currBeanTable);
                 addAllMethodsToFactory(serviceBuildFactory);
                 String serviceInterfacePath = serviceSaveDirector.getPath()+File.separator+serviceInterfaceName+".java";
@@ -552,7 +556,7 @@ public class MapperSwing {
                 if(chooseTableComboBox.getSelectedIndex() >= 0){
                     String tableName = (String) chooseTableComboBox.getSelectedItem();
                     String className = StringTransverter.initialUpperCaseTransvert(tableName)+"ServiceTest";
-                    String packageMessage = JavaClassTransverter.builderPackageByFile(file);
+                    String packageMessage = JavaClassContextGenerator.generatePackageByFile(file);
                     testServiceClassNameTextField.setText(className);
                     testServicePackageTextField.setText(packageMessage);
                 }

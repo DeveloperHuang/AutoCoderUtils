@@ -1,13 +1,14 @@
 package com.huang.auto.coder.utils;
 
-import org.junit.Test; 
+import com.huang.auto.coder.factory.JavaClassContextGenerator;
+import org.junit.Test;
 import org.junit.Before; 
 import org.junit.After;
 
 import java.io.File;
 
 /** 
-* JavaClassTransverter Tester.
+* JavaClassContextGenerator Tester.
 * 
 * @author <Authors name> 
 * @version 1.0 
@@ -24,14 +25,14 @@ public class PackageFactoryTest {
 
     /** 
     * 
-    * Method: builderPackageByFile(File file)
+    * Method: generatePackageByFile(File file)
     * 
     */ 
     @Test
     public void testBuilderJavaPackageByFile() {
         File file = new File("abc"+File.separator+"ds"+File.separator+"src"+File.separator+"ds"+File.separator+"src"
                 +File.separator+"com"+File.separator+"name"+File.separator+"da.java");
-        String packageMessage = JavaClassTransverter.builderPackageByFile(file);
+        String packageMessage = JavaClassContextGenerator.generatePackageByFile(file);
         System.out.println(packageMessage);
     }
 

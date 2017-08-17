@@ -1,18 +1,16 @@
-package com.huang.auto.coder.mybatis.service;
-
-import com.huang.auto.coder.utils.Column;
+package com.huang.auto.coder.factory.pojo;
 
 import java.util.List;
 
 /**
  * Created by JianQiu on 2016/11/2.
  */
-public class MethodInfo{
+public class Method {
     private String methodName;
     private List<Column> paramColumnList;
     private List<Column> whereColumnList;
 
-    public MethodInfo(String methodName, List<Column> paramColumnList, List<Column> whereColumnList) {
+    public Method(String methodName, List<Column> paramColumnList, List<Column> whereColumnList) {
         this.methodName = methodName;
         this.paramColumnList = paramColumnList;
         this.whereColumnList = whereColumnList;

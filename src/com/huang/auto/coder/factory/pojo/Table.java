@@ -1,4 +1,6 @@
-package com.huang.auto.coder.utils;
+package com.huang.auto.coder.factory.pojo;
+
+import com.huang.auto.coder.factory.pojo.Column;
 
 import java.util.List;
 

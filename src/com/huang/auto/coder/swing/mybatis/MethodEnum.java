@@ -1,4 +1,4 @@
-package com.huang.auto.coder.mybatis.swing;
+package com.huang.auto.coder.swing.mybatis;
 
 /**
  * Created by JianQiu on 2016/10/16.

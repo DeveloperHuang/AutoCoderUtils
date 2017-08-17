@@ -1,9 +1,9 @@
-package com.huang.auto.coder.mybatis.service;
+package com.huang.auto.coder.factory;
 
-import com.huang.auto.coder.mybatis.swing.MethodEnum;
-import com.huang.auto.coder.utils.JavaClassTransverter;
+import com.huang.auto.coder.factory.pojo.Method;
+import com.huang.auto.coder.swing.mybatis.MethodEnum;
 import com.huang.auto.coder.utils.StringTransverter;
-import com.huang.auto.coder.utils.Table;
+import com.huang.auto.coder.factory.pojo.Table;
 
 import java.io.File;
 import java.util.*;
@@ -11,12 +11,12 @@ import java.util.*;
 /**
  * Created by JianQiu on 2016/11/2.
  */
-public class ServiceBuildFactory extends MyBatisCodeBuildFactory {
+public class ServiceGenerateFactory extends ContextGenerateFactory {
 
     private File mapperSaveDirectory;
     private String mapperInterface;
 
-    public ServiceBuildFactory(File saveDirectory, String interfaceName, File mapperSaveDirectory
+    public ServiceGenerateFactory(File saveDirectory, String interfaceName, File mapperSaveDirectory
             , String mapperInterface, File beanFile, Table beanTable) {
         super(saveDirectory, interfaceName, beanFile, beanTable);
         this.mapperSaveDirectory = mapperSaveDirectory;
@@ -32,8 +32,8 @@ public class ServiceBuildFactory extends MyBatisCodeBuildFactory {
     public String getInterfaceContext() {
         StringBuffer interfaceContextBuffer = new StringBuffer();
 
-        String import_bean = JavaClassTransverter.builderImportByFile(beanFile);
-        String packageMessage = JavaClassTransverter.builderPackageByFile(saveDirectory);
+        String import_bean = JavaClassContextGenerator.generateImportByFile(beanFile);
+        String packageMessage = JavaClassContextGenerator.generatePackageByFile(saveDirectory);
         String head = packageMessage + "\n\n" + IMPORT_LIST + "\n" + import_bean + "\n\n";
         interfaceContextBuffer.append(head);
         interfaceContextBuffer.append("public interface " + interfaceName + " {\n\n");
@@ -51,10 +51,10 @@ public class ServiceBuildFactory extends MyBatisCodeBuildFactory {
     private StringBuffer getInterfaceMethodContext() {
         StringBuffer methodContext = new StringBuffer();
         Set<MethodEnum> methodEnumSet = methodInfoListMap.keySet();
-        String beanClassName = JavaClassTransverter.getClassName(beanFile);
+        String beanClassName = JavaClassContextGenerator.getClassName(beanFile);
         String beanClassLowerName = StringTransverter.initialLowerCaseTransvert(beanClassName);
         for (MethodEnum methodEnum : methodEnumSet) {
-            List<MethodInfo> methodInfoList = methodInfoListMap.get(methodEnum);
+            List<Method> methodList = methodInfoListMap.get(methodEnum);
             String resultContext;
             switch (methodEnum) {
                 case SELECT:
@@ -64,12 +64,12 @@ public class ServiceBuildFactory extends MyBatisCodeBuildFactory {
                     resultContext = "void";
                     break;
             }
-            for (MethodInfo methodInfo : methodInfoList) {
+            for (Method method : methodList) {
                 if (methodEnum == MethodEnum.SELECT &&
-                        (methodInfo.getWhereColumnList() == null || methodInfo.getWhereColumnList().size() == 0)) {
-                    methodContext.append("\tpublic " + resultContext + " " + methodInfo.getMethodName() + "();\n");
+                        (method.getWhereColumnList() == null || method.getWhereColumnList().size() == 0)) {
+                    methodContext.append("\tpublic " + resultContext + " " + method.getMethodName() + "();\n");
                 } else {
-                    methodContext.append("\tpublic " + resultContext + " " + methodInfo.getMethodName()
+                    methodContext.append("\tpublic " + resultContext + " " + method.getMethodName()
                             + "(" + beanClassName + " " + beanClassLowerName + ");\n");
                 }
             }
@@ -87,10 +87,10 @@ public class ServiceBuildFactory extends MyBatisCodeBuildFactory {
     public String getImplementsContext() {
 
         StringBuffer implementsContext = new StringBuffer();
-        String import_bean = JavaClassTransverter.builderImportByFile(beanFile);
-        String import_mapper = "import " + JavaClassTransverter.builderPackageContextByFile(mapperSaveDirectory)
+        String import_bean = JavaClassContextGenerator.generateImportByFile(beanFile);
+        String import_mapper = "import " + JavaClassContextGenerator.generatePackageContextByFile(mapperSaveDirectory)
                 + "." + mapperInterface + ";\n";
-        String packageMessage = JavaClassTransverter.builderPackageByFile(saveDirectory);
+        String packageMessage = JavaClassContextGenerator.generatePackageByFile(saveDirectory);
 
         String head = packageMessage + "\n\n" + IMPORT_LIST + "\n" +IMPORT_SERVICE+"\n"+IMPORT_AUTOWIRED+"\n"
                 + import_mapper + import_bean + "\n\n";
@@ -115,11 +115,11 @@ public class ServiceBuildFactory extends MyBatisCodeBuildFactory {
     private StringBuffer getMethodImplContext() {
         StringBuffer methodImplContext = new StringBuffer();
         Set<MethodEnum> methodEnumSet = methodInfoListMap.keySet();
-        String beanClassName = JavaClassTransverter.getClassName(beanFile);
+        String beanClassName = JavaClassContextGenerator.getClassName(beanFile);
         String beanClassLowerName = StringTransverter.initialLowerCaseTransvert(beanClassName);
         String mapperInterfaceLowerName = StringTransverter.initialLowerCaseTransvert(mapperInterface);
         for (MethodEnum methodEnum : methodEnumSet) {
-            List<MethodInfo> methodInfoList = methodInfoListMap.get(methodEnum);
+            List<Method> methodList = methodInfoListMap.get(methodEnum);
             String resultContext;
             switch (methodEnum) {
                 case SELECT:
@@ -129,34 +129,34 @@ public class ServiceBuildFactory extends MyBatisCodeBuildFactory {
                     resultContext = "void";
                     break;
             }
-            for (MethodInfo methodInfo : methodInfoList) {
+            for (Method method : methodList) {
                 methodImplContext.append("\t@Override\n");
 
                 if (methodEnum == MethodEnum.SELECT) {
-                    if (methodInfo.getWhereColumnList() == null || methodInfo.getWhereColumnList().size() == 0) {
+                    if (method.getWhereColumnList() == null || method.getWhereColumnList().size() == 0) {
                         /* public List<Pojo> loadAllRecordBuffered() {
                          *    return recordBufferedMapper.loadAllRecordBuffered();
                          */
-                        methodImplContext.append("\tpublic " + resultContext + " " + methodInfo.getMethodName()
+                        methodImplContext.append("\tpublic " + resultContext + " " + method.getMethodName()
                                 + "(){\n");
                         methodImplContext.append("\t\treturn " + mapperInterfaceLowerName + "."
-                                + methodInfo.getMethodName() + "();\n");
+                                + method.getMethodName() + "();\n");
                     } else {
                         /* public List<Pojo> loadAllRecordBuffered(Pojo pojo) {
                          *    return recordBufferedMapper.loadAllRecordBuffered(Pojo pojo);
                          */
-                        methodImplContext.append("\tpublic " + resultContext + " " + methodInfo.getMethodName()
+                        methodImplContext.append("\tpublic " + resultContext + " " + method.getMethodName()
                                 + "(" + beanClassName + " " + beanClassLowerName + "){\n");
-                        methodImplContext.append("\t\treturn " + mapperInterfaceLowerName + "." + methodInfo.getMethodName()
+                        methodImplContext.append("\t\treturn " + mapperInterfaceLowerName + "." + method.getMethodName()
                                 + "(" + beanClassLowerName + ");\n");
                     }
                 } else {
                      /* public void loadAllRecordBuffered(Pojo pojo) {
                       *    recordBufferedMapper.loadAllRecordBuffered(Pojo pojo);
                       */
-                    methodImplContext.append("\tpublic " + resultContext + " " + methodInfo.getMethodName()
+                    methodImplContext.append("\tpublic " + resultContext + " " + method.getMethodName()
                             + "(" + beanClassName + " " + beanClassLowerName + "){\n");
-                    methodImplContext.append("\t\t" + mapperInterfaceLowerName + "." + methodInfo.getMethodName() + "("
+                    methodImplContext.append("\t\t" + mapperInterfaceLowerName + "." + method.getMethodName() + "("
                             + beanClassLowerName + ");\n");
                 }
                 methodImplContext.append("\t}\n");

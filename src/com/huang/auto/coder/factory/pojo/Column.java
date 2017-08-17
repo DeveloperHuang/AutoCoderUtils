@@ -1,4 +1,4 @@
-package com.huang.auto.coder.utils;
+package com.huang.auto.coder.factory.pojo;
 
 /**
  * Created by huang on 2016/10/6.

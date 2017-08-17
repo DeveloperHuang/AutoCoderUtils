@@ -1,10 +1,11 @@
 package com.huang.auto.coder.mybatis.service;
 
-import com.huang.auto.coder.mybatis.swing.MethodEnum;
-import com.huang.auto.coder.utils.Column;
+import com.huang.auto.coder.factory.MapperGenerateFactory;
+import com.huang.auto.coder.swing.mybatis.MethodEnum;
+import com.huang.auto.coder.factory.pojo.Column;
 import com.huang.auto.coder.utils.DataBaseTableUtils;
-import com.huang.auto.coder.utils.SwingConsole;
-import com.huang.auto.coder.utils.Table;
+import com.huang.auto.coder.swing.SwingConsole;
+import com.huang.auto.coder.factory.pojo.Table;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,7 +24,7 @@ public class TestMapperFactory {
     private File saveDirectory;
     private Table table ;
     private String interfaceName;
-    private MapperBuildFactory mapperFactory;
+    private MapperGenerateFactory mapperFactory;
 
     @Before
     public void init(){
@@ -33,7 +34,7 @@ public class TestMapperFactory {
         dataBaseTableUtils = new DataBaseTableUtils("localhost","root","root");
         table = dataBaseTableUtils.loadTableInfomation("autocode","demo");
         interfaceName = "DemoMapper";
-        mapperFactory = new MapperBuildFactory(saveDirectory,interfaceName,beanfile,table);
+        mapperFactory = new MapperGenerateFactory(saveDirectory,interfaceName,beanfile,table);
         initMethod();
     }
 

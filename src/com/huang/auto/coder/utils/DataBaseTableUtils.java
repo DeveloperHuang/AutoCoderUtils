@@ -1,5 +1,7 @@
 package com.huang.auto.coder.utils;
 
+import com.huang.auto.coder.factory.pojo.Column;
+import com.huang.auto.coder.factory.pojo.Table;
 import com.mysql.jdbc.Connection;
 
 import java.sql.PreparedStatement;
@@ -138,7 +140,7 @@ public class DataBaseTableUtils {
         return null;
     }
 
-    public Table loadTableInfomation(String dataBaseName,String tableName){
+    public Table loadTableInfomation(String dataBaseName, String tableName){
         Table table = new Table();
         table.setTableName(tableName);
         String sql = "SELECT COLUMN_NAME,DATA_TYPE FROM COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?";
