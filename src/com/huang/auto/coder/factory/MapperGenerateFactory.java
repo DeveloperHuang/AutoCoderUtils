@@ -319,7 +319,7 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
     private StringBuffer getWhereIFSQLContext(List<Column> whereColumnList) {
         StringBuffer whereBuffer = new StringBuffer();
         if(whereColumnList != null && whereColumnList.size() > 0){
-            whereBuffer.append("\t\t<WHERE>\n ");
+            whereBuffer.append("\t\t<where>\n ");
             for(int i = 0 ; i < whereColumnList.size() ; i++){
                 String fieldName = whereColumnList.get(i).getFieldName();
                 String lowerCamelFieldName = StringTransverter.lowerCamelCase(fieldName);
