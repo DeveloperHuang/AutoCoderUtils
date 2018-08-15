@@ -29,11 +29,11 @@ public class TestMapperFactory {
     @Before
     public void init(){
 
-        beanfile = new File("E:\\IntelliJWorkspace\\AutoCoderUtils\\autoSrc\\com\\huang\\auto\\pojo\\Demo.java");
-        saveDirectory = new File("E:\\IntelliJWorkspace\\AutoCoderUtils\\autoSrc\\com\\huang\\auto\\mapper");
+        beanfile = new File("E:\\workspace\\IDEAWorkspace\\MySelfPojo\\AutoCoderUtils\\autoSrc\\com\\huang\\auto\\pojo\\Product.java");
+        saveDirectory = new File("E:\\workspace\\IDEAWorkspace\\MySelfPojo\\AutoCoderUtils\\autoSrc\\com\\huang\\auto\\mapper");
         dataBaseTableUtils = new DataBaseTableUtils("localhost","root","root");
-        table = dataBaseTableUtils.loadTableInfomation("autocode","demo");
-        interfaceName = "DemoMapper";
+        table = dataBaseTableUtils.loadTableInfomation("antarctic_crm","tbl_product");
+        interfaceName = "ProductMapper";
         mapperFactory = new MapperGenerateFactory(saveDirectory,interfaceName,beanfile,table);
         initMethod();
     }
@@ -86,7 +86,6 @@ public class TestMapperFactory {
         int width = 1400;
         int height = 1000;
         JFrame jFrame = new JFrame();
-        JPanel jPanel = new JPanel();
 
         JTextArea textArea = new JTextArea();
         textArea.setSize(width,height);

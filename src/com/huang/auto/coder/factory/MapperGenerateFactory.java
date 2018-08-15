@@ -219,7 +219,7 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
                 //***************构造SELECT内容完毕******************
                 //***************构造WHERE内容******************
                 List<Column> whereColumnList = method.getWhereColumnList();
-                StringBuffer whereSQLContext = getWhereSQLContext(whereColumnList);
+                StringBuffer whereSQLContext = getWhereIFSQLContext(whereColumnList);
                 //***************构造WHERE内容完毕******************
                 String paramMap = "";
                 if(method.getWhereColumnList() != null && method.getWhereColumnList().size() > 0){
@@ -314,6 +314,33 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
             }
         }
         return deleteMethodContext;
+    }
+
+    private StringBuffer getWhereIFSQLContext(List<Column> whereColumnList) {
+        StringBuffer whereBuffer = new StringBuffer();
+        if(whereColumnList != null && whereColumnList.size() > 0){
+            whereBuffer.append("\t\t<WHERE>\n ");
+            for(int i = 0 ; i < whereColumnList.size() ; i++){
+                String fieldName = whereColumnList.get(i).getFieldName();
+                String lowerCamelFieldName = StringTransverter.lowerCamelCase(fieldName);
+                //<if test="id != null and id != ''">
+                whereBuffer.append("\t\t\t<if test=\"")
+                        .append(lowerCamelFieldName)
+                        .append(" != null and ")
+                        .append(lowerCamelFieldName)
+                        .append(" != ''\">\n");
+                //AND id = #{id}
+                whereBuffer.append("\t\t\t\tAND ")
+                        .append(fieldName).
+                        append(" = #{").
+                        append(lowerCamelFieldName).
+                        append("}\n");
+                whereBuffer.append("\t\t\t</if>\n");
+            }
+            whereBuffer.append("\t\t</where>\n");
+        }
+
+        return whereBuffer;
     }
 
     private StringBuffer getWhereSQLContext(List<Column> whereColumnList) {

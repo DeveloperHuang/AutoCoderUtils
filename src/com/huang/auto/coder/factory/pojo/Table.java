@@ -6,6 +6,7 @@ import java.util.List;
 
 /**
  * Created by huang on 2016/10/6.
+ * 数据库表信息
  */
 public class Table {
     private String tableName;

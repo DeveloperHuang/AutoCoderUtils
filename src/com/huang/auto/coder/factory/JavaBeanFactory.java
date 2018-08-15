@@ -35,6 +35,13 @@ public class JavaBeanFactory {
     }
 
 
+    /**
+     * 生成Java Bean的内容
+     * @param packageMessage package内容
+     * @param className class名称
+     * @param table 数据库表信息
+     * @return
+     */
     public static String generateBeanClassString(String packageMessage, String className, Table table){
 
         StringBuffer head = new StringBuffer();
@@ -64,6 +71,12 @@ public class JavaBeanFactory {
         return classMessage;
     }
 
+    /**
+     * 生成JavaBean的get set方法内容
+     * @param fieldName
+     * @param javaType
+     * @return
+     */
     private static String generateBeanMethodString(String fieldName, String javaType){
         String fieldMethodName;
         if(fieldName.length() > 1){
@@ -82,9 +95,9 @@ public class JavaBeanFactory {
     }
 
     /**
-     * 获取Bean属性字符串
-     * @param fieldName
-     * @param javaType
+     * 生成Bean属性字符串
+     * @param fieldName bean名称
+     * @param javaType get set 方法
      * @return
      */
     private static String generateBeanAttributeString(String fieldName, String javaType){
