@@ -1,7 +1,7 @@
 package com.huang.auto.coder.utils;
 
 /**
- * Created by JianQiu on 2016/10/12.
+ * Created by Joss on 2016/10/12.
  */
 public class StringTransverter {
 

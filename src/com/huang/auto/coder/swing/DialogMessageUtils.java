@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Created by JianQiu on 2016/10/11.
+ * Created by Joss on 2016/10/11.
  */
 public class DialogMessageUtils {
 

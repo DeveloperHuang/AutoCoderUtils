@@ -6,7 +6,9 @@ import java.io.File;
 import java.util.regex.Matcher;
 
 /**
- * Created by JianQiu on 2016/10/12.
+ * Created by Joss on 2016/10/12.
+ * Java基础信息的生成器：
+ * 包路径、对应的import内容、class名称
  */
 public class JavaClassContextGenerator {
 
@@ -17,12 +19,14 @@ public class JavaClassContextGenerator {
     public static final String[] SRC_PATHS = new String[] {SRC_PATH,TEST_PATH,AUTO_TEST_PATH};
 
     /**
-     * 获取完整的package语句
+     * 根据要保存的文件所在的路径，生成package语句
+     * 比如：E:demo/src/com/joss/demo/HelloWorld.java
+     * 生成package：package com.joss.demo;
      * @param file java文件或路径
      * @return package语句
      */
     public static String generatePackageByFile(File file){
-        String packageContext = generatePackageContextByFile(file);
+        String packageContext = generatePackageUrlByFile(file);
         if(packageContext != null && packageContext.length() > 0){
             return "package "+packageContext+";";
         }else{
@@ -30,8 +34,15 @@ public class JavaClassContextGenerator {
         }
     }
 
+    /**
+     * 根据要保存的文件所在的路径，生成import语句
+     * 比如：E:demo/src/com/joss/demo/HelloWorld.java
+     * 生成package：import com.joss.demo.HelloWorld;
+     * @param file
+     * @return
+     */
     public static String generateImportByFile(File file){
-        String packageContext = generatePackageContextByFile(file);
+        String packageContext = generatePackageUrlByFile(file);
         if(packageContext != null && packageContext.length() > 0){
             return "import "+packageContext+"."+getClassName(file)+";";
         }else{
@@ -40,11 +51,14 @@ public class JavaClassContextGenerator {
     }
 
     /**
-     * 获取package的内容（不包含package和;）
+     * 根据要保存的文件所在的路径，判断生成对应包路径
+     * 注意：生成文件的路径应该包含根路径（src、test。autoSrc）
+     * 比如：E:demo/src/com/joss/demo/HelloWorld.java
+     * 生成package：com.joss.demo
      * @param file java文件或路径
      * @return package中的路径内容
      */
-    public static String generatePackageContextByFile(File file){
+    public static String generatePackageUrlByFile(File file){
         String path;
         if (file.isDirectory()) {
             path = file.getPath();
@@ -71,7 +85,7 @@ public class JavaClassContextGenerator {
     }
 
     /**
-     * 获取Java文件的ClassName
+     * 根据要保存的文件,得到对应的ClassName
      * @return ClassName
      */
     public static String getClassName(File file){

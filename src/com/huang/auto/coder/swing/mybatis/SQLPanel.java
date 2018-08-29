@@ -3,7 +3,7 @@ package com.huang.auto.coder.swing.mybatis;
 import javax.swing.*;
 
 /**
- * Created by JianQiu on 2016/10/10.
+ * Created by Joss on 2016/10/10.
  */
 public class SQLPanel {
     private JButton triggerAllWhere;

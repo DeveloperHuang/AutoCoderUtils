@@ -6,6 +6,7 @@ package com.huang.auto.coder.factory.pojo;
 public class Column {
     private String fieldName;
     private String fieldType;
+    private boolean primaryKey;
 
     public String getFieldName() {
         return fieldName;
@@ -21,5 +22,13 @@ public class Column {
 
     public void setFieldType(String fieldType) {
         this.fieldType = fieldType;
+    }
+
+    public boolean isPrimaryKey() {
+        return primaryKey;
+    }
+
+    public void setPrimaryKey(boolean primaryKey) {
+        this.primaryKey = primaryKey;
     }
 }

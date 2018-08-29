@@ -3,7 +3,8 @@ package com.huang.auto.coder.factory.pojo;
 import java.util.List;
 
 /**
- * Created by JianQiu on 2016/11/2.
+ * Created by Joss on 2016/11/2.
+ * 方法对象
  */
 public class Method {
     private String methodName;

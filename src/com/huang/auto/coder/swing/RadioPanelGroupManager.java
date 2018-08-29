@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Created by JianQiu on 2016/10/15.
+ * Created by Joss on 2016/10/15.
  * 每个对象管理一组Panel
  */
 public class RadioPanelGroupManager {

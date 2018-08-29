@@ -9,7 +9,7 @@ import java.io.File;
 import java.util.*;
 
 /**
- * Created by JianQiu on 2016/11/2.
+ * Created by Joss on 2016/11/2.
  */
 public class ServiceGenerateFactory extends ContextGenerateFactory {
 
@@ -55,22 +55,30 @@ public class ServiceGenerateFactory extends ContextGenerateFactory {
         String beanClassLowerName = StringTransverter.initialLowerCaseTransvert(beanClassName);
         for (MethodEnum methodEnum : methodEnumSet) {
             List<Method> methodList = methodInfoListMap.get(methodEnum);
-            String resultContext;
+            String returnBeanClass;
             switch (methodEnum) {
                 case SELECT:
-                    resultContext = "List<" + beanClassName + ">";
+                    returnBeanClass = "List<" + beanClassName + ">";
                     break;
                 default:
-                    resultContext = "void";
+                    returnBeanClass = "void";
                     break;
             }
             for (Method method : methodList) {
                 if (methodEnum == MethodEnum.SELECT &&
                         (method.getWhereColumnList() == null || method.getWhereColumnList().size() == 0)) {
-                    methodContext.append("\tpublic " + resultContext + " " + method.getMethodName() + "();\n");
+                    methodContext.append("\tpublic "+returnBeanClass+" "+ method.getMethodName()+"();\n");
                 } else {
-                    methodContext.append("\tpublic " + resultContext + " " + method.getMethodName()
-                            + "(" + beanClassName + " " + beanClassLowerName + ");\n");
+                    //如果只包含一个条件参数，且该条件参数是主键，则返回结果为对象，不为list
+                    if(method.getWhereColumnList().size() == 1
+                            && method.getWhereColumnList().get(0).isPrimaryKey()){
+                        methodContext.append("\tpublic " + beanClassName + " " + method.getMethodName()
+                                + "(" + beanClassName + " " + beanClassLowerName + ");\n");
+                    }else{
+                        methodContext.append("\tpublic " + returnBeanClass + " " + method.getMethodName()
+                                + "(" + beanClassName + " " + beanClassLowerName + ");\n");
+                    }
+
                 }
             }
             methodContext.append("\n");
@@ -88,7 +96,7 @@ public class ServiceGenerateFactory extends ContextGenerateFactory {
 
         StringBuffer implementsContext = new StringBuffer();
         String import_bean = JavaClassContextGenerator.generateImportByFile(beanFile);
-        String import_mapper = "import " + JavaClassContextGenerator.generatePackageContextByFile(mapperSaveDirectory)
+        String import_mapper = "import " + JavaClassContextGenerator.generatePackageUrlByFile(mapperSaveDirectory)
                 + "." + mapperInterface + ";\n";
         String packageMessage = JavaClassContextGenerator.generatePackageByFile(saveDirectory);
 
@@ -120,13 +128,13 @@ public class ServiceGenerateFactory extends ContextGenerateFactory {
         String mapperInterfaceLowerName = StringTransverter.initialLowerCaseTransvert(mapperInterface);
         for (MethodEnum methodEnum : methodEnumSet) {
             List<Method> methodList = methodInfoListMap.get(methodEnum);
-            String resultContext;
+            String returnBeanClass;
             switch (methodEnum) {
                 case SELECT:
-                    resultContext = "List<" + beanClassName + ">";
+                    returnBeanClass = "List<" + beanClassName + ">";
                     break;
                 default:
-                    resultContext = "void";
+                    returnBeanClass = "void";
                     break;
             }
             for (Method method : methodList) {
@@ -137,7 +145,7 @@ public class ServiceGenerateFactory extends ContextGenerateFactory {
                         /* public List<Pojo> loadAllRecordBuffered() {
                          *    return recordBufferedMapper.loadAllRecordBuffered();
                          */
-                        methodImplContext.append("\tpublic " + resultContext + " " + method.getMethodName()
+                        methodImplContext.append("\tpublic " + returnBeanClass + " " + method.getMethodName()
                                 + "(){\n");
                         methodImplContext.append("\t\treturn " + mapperInterfaceLowerName + "."
                                 + method.getMethodName() + "();\n");
@@ -145,8 +153,16 @@ public class ServiceGenerateFactory extends ContextGenerateFactory {
                         /* public List<Pojo> loadAllRecordBuffered(Pojo pojo) {
                          *    return recordBufferedMapper.loadAllRecordBuffered(Pojo pojo);
                          */
-                        methodImplContext.append("\tpublic " + resultContext + " " + method.getMethodName()
-                                + "(" + beanClassName + " " + beanClassLowerName + "){\n");
+                        //如果只包含一个条件参数，且该条件参数是主键，则返回结果为对象，不为list
+                        if(method.getWhereColumnList().size() == 1
+                                && method.getWhereColumnList().get(0).isPrimaryKey()){
+                            methodImplContext.append("\tpublic " + beanClassName + " " + method.getMethodName()
+                                    + "(" + beanClassName + " " + beanClassLowerName + "){\n");
+                        }else{
+                            methodImplContext.append("\tpublic " + returnBeanClass + " " + method.getMethodName()
+                                    + "(" + beanClassName + " " + beanClassLowerName + "){\n");
+                        }
+
                         methodImplContext.append("\t\treturn " + mapperInterfaceLowerName + "." + method.getMethodName()
                                 + "(" + beanClassLowerName + ");\n");
                     }
@@ -154,7 +170,7 @@ public class ServiceGenerateFactory extends ContextGenerateFactory {
                      /* public void loadAllRecordBuffered(Pojo pojo) {
                       *    recordBufferedMapper.loadAllRecordBuffered(Pojo pojo);
                       */
-                    methodImplContext.append("\tpublic " + resultContext + " " + method.getMethodName()
+                    methodImplContext.append("\tpublic " + returnBeanClass + " " + method.getMethodName()
                             + "(" + beanClassName + " " + beanClassLowerName + "){\n");
                     methodImplContext.append("\t\t" + mapperInterfaceLowerName + "." + method.getMethodName() + "("
                             + beanClassLowerName + ");\n");

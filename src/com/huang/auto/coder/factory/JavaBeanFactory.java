@@ -26,10 +26,10 @@ public class JavaBeanFactory {
         reflectTypeMap.put("bigint","Long");
         reflectTypeMap.put("text","String");
         reflectTypeMap.put("char","String");
-        reflectTypeMap.put("date","Date");
+        reflectTypeMap.put("date","String");
         reflectTypeMap.put("time","Date");
         reflectTypeMap.put("year","Integer");
-        reflectTypeMap.put("datetime","Date");
+        reflectTypeMap.put("datetime","String");
         reflectTypeMap.put("timestamp","Date");
         reflectTypeMap.put("longtext","String");
     }
@@ -48,7 +48,7 @@ public class JavaBeanFactory {
         head.append("import java.io.Serializable;\n");
         StringBuffer methodMessage = new StringBuffer();
         StringBuffer attributeMessage = new StringBuffer();
-        attributeMessage.append("private static final long serialVersionUID = 1L;\n");
+        attributeMessage.append("\tprivate static final long serialVersionUID = 1L;\n");
 
         List<Column> columnList = table.getColumns();
         if(columnList != null){

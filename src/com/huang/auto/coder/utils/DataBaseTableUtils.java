@@ -143,7 +143,7 @@ public class DataBaseTableUtils {
     public Table loadTableInfomation(String dataBaseName, String tableName){
         Table table = new Table();
         table.setTableName(tableName);
-        String sql = "SELECT COLUMN_NAME,DATA_TYPE FROM COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?";
+        String sql = "SELECT COLUMN_NAME,DATA_TYPE,COLUMN_KEY FROM COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?";
 
         try {
             PreparedStatement preparedStatement = connection
@@ -156,6 +156,11 @@ public class DataBaseTableUtils {
                 Column column = new Column();
                 column.setFieldName(rs.getString("COLUMN_NAME"));
                 column.setFieldType(rs.getString("DATA_TYPE"));
+                if("PRI".equals(rs.getString("COLUMN_KEY"))){
+                    column.setPrimaryKey(true);
+                }else{
+                    column.setPrimaryKey(false);
+                }
                 columnList.add(column);
             }
             table.setColumns(columnList);

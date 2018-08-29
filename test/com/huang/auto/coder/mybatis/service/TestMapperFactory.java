@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by JianQiu on 2016/10/29.
+ * Created by Joss on 2016/10/29.
  */
 public class TestMapperFactory {
     DataBaseTableUtils dataBaseTableUtils ;

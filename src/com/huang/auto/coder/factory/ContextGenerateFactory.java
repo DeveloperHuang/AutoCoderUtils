@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by JianQiu on 2016/11/2.
+ * Created by Joss on 2016/11/2.
  */
 public abstract class ContextGenerateFactory {
     public static final String IMPORT_LIST = "import java.util.List;";

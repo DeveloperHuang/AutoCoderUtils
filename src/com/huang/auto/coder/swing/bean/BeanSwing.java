@@ -246,6 +246,6 @@ public class BeanSwing extends JFrame{
         public static void main(String[] args) {
             JFrame frame = new JFrame("BeanSwing");
             frame.setContentPane(new BeanSwing().mainPanel);
-            SwingConsole.run(frame,700,800);
+            SwingConsole.run(frame,750,800);
         }
 }

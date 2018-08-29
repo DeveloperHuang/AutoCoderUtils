@@ -10,7 +10,7 @@ import java.io.File;
 import java.util.*;
 
 /**
- * Created by JianQiu on 2016/10/26.
+ * Created by Joss on 2016/10/26.
  * 目前查询默认返回结果为List
  *
  * 实现思路：
@@ -90,28 +90,39 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
         String beanClassLowerName = StringTransverter.initialLowerCaseTransvert(beanClassName);
         for(MethodEnum methodEnum : methodEnumSet){
             List<Method> methodList = methodInfoListMap.get(methodEnum);
-            String resultContext = null;
+            String returnBeanClass = null;
             switch (methodEnum){
                 case SELECT:
-                    resultContext = "List<"+beanClassName+">";
+                    returnBeanClass = "List<"+beanClassName+">";
                     break;
                 default:
-                    resultContext = "void";
+                    returnBeanClass = "void";
                     break;
             }
             for(Method method : methodList){
                 if(methodEnum == MethodEnum.SELECT &&
                         (method.getWhereColumnList() == null || method.getWhereColumnList().size() == 0)){
-                    methodContext.append("\tpublic "+resultContext+" "+ method.getMethodName()+"();\n");
+
+                    methodContext.append("\tpublic "+returnBeanClass+" "+ method.getMethodName()+"();\n");
                 }else{
-                    methodContext.append("\tpublic "+resultContext+" "+ method.getMethodName()
-                            +"("+beanClassName+" "+ beanClassLowerName +");\n");
+                    //如果只包含一个条件参数，且该条件参数是主键，则返回结果为对象，不为list
+                    if(method.getWhereColumnList().size() == 1
+                            && method.getWhereColumnList().get(0).isPrimaryKey()){
+                        methodContext.append("\tpublic "+beanClassName+" "+ method.getMethodName()
+                                +"("+beanClassName+" "+ beanClassLowerName +");\n");
+                    }else{
+                        methodContext.append("\tpublic "+returnBeanClass+" "+ method.getMethodName()
+                                +"("+beanClassName+" "+ beanClassLowerName +");\n");
+                    }
+
                 }
             }
             methodContext.append("\n");
         }
         return methodContext;
     }
+
+
 
     /**
      * 获取实现的内容
@@ -130,7 +141,7 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
         StringBuffer xmlContext = new StringBuffer();
 
         xmlContext.append(XML_HEAD);
-        String packageContext = JavaClassContextGenerator.generatePackageContextByFile(saveDirectory)+"."
+        String packageContext = JavaClassContextGenerator.generatePackageUrlByFile(saveDirectory)+"."
                 +interfaceName;
         xmlContext.append("<mapper namespace=\""+packageContext+"\">\n\n");
 
@@ -159,7 +170,7 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
 
     private StringBuffer getResultMap(){
         StringBuffer resultMapContext = new StringBuffer();
-        String packageContext = JavaClassContextGenerator.generatePackageContextByFile(beanFile)+"."+ JavaClassContextGenerator.getClassName(beanFile);
+        String packageContext = JavaClassContextGenerator.generatePackageUrlByFile(beanFile)+"."+ JavaClassContextGenerator.getClassName(beanFile);
         resultMapContext.append("\t<resultMap type=\""+packageContext+"\"\n" +
                 "\t\tid=\""+getResultMapId()+"\">\n");
         List<Column> columnList = beanTable.getColumns();
@@ -174,7 +185,7 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
     private StringBuffer getParameterMapContext(){
         StringBuffer parameterMapContext = new StringBuffer();
 
-        String packageContext = JavaClassContextGenerator.generatePackageContextByFile(beanFile)+"."+ JavaClassContextGenerator.getClassName(beanFile);
+        String packageContext = JavaClassContextGenerator.generatePackageUrlByFile(beanFile)+"."+ JavaClassContextGenerator.getClassName(beanFile);
         parameterMapContext.append("\t<parameterMap id=\""+getParameterMapId()+"\"\n" +
                 "\t\ttype=\""+packageContext+"\">\n");
         List<Column> columnList = beanTable.getColumns();
