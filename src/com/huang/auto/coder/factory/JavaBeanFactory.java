@@ -109,7 +109,7 @@ public class JavaBeanFactory {
      * @param dataBaseType
      * @return
      */
-    private static String getJavaTypeByDataBaseType(String dataBaseType){
+    public static String getJavaTypeByDataBaseType(String dataBaseType){
         if(reflectTypeMap.containsKey(dataBaseType)){
             return reflectTypeMap.get(dataBaseType);
         }else{

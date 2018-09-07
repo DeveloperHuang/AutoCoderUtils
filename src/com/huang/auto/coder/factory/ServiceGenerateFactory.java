@@ -1,5 +1,6 @@
 package com.huang.auto.coder.factory;
 
+import com.huang.auto.coder.factory.pojo.Column;
 import com.huang.auto.coder.factory.pojo.Method;
 import com.huang.auto.coder.swing.mybatis.MethodEnum;
 import com.huang.auto.coder.utils.StringTransverter;
@@ -41,49 +42,6 @@ public class ServiceGenerateFactory extends ContextGenerateFactory {
         interfaceContextBuffer.append("}");
 
         return interfaceContextBuffer.toString();
-    }
-
-    /**
-     * 获取接口方法内容
-     *
-     * @return 方法内容字符串
-     */
-    private StringBuffer getInterfaceMethodContext() {
-        StringBuffer methodContext = new StringBuffer();
-        Set<MethodEnum> methodEnumSet = methodInfoListMap.keySet();
-        String beanClassName = JavaClassContextGenerator.getClassName(beanFile);
-        String beanClassLowerName = StringTransverter.initialLowerCaseTransvert(beanClassName);
-        for (MethodEnum methodEnum : methodEnumSet) {
-            List<Method> methodList = methodInfoListMap.get(methodEnum);
-            String returnBeanClass;
-            switch (methodEnum) {
-                case SELECT:
-                    returnBeanClass = "List<" + beanClassName + ">";
-                    break;
-                default:
-                    returnBeanClass = "void";
-                    break;
-            }
-            for (Method method : methodList) {
-                if (methodEnum == MethodEnum.SELECT &&
-                        (method.getWhereColumnList() == null || method.getWhereColumnList().size() == 0)) {
-                    methodContext.append("\tpublic "+returnBeanClass+" "+ method.getMethodName()+"();\n");
-                } else {
-                    //如果只包含一个条件参数，且该条件参数是主键，则返回结果为对象，不为list
-                    if(method.getWhereColumnList().size() == 1
-                            && method.getWhereColumnList().get(0).isPrimaryKey()){
-                        methodContext.append("\tpublic " + beanClassName + " " + method.getMethodName()
-                                + "(" + beanClassName + " " + beanClassLowerName + ");\n");
-                    }else{
-                        methodContext.append("\tpublic " + returnBeanClass + " " + method.getMethodName()
-                                + "(" + beanClassName + " " + beanClassLowerName + ");\n");
-                    }
-
-                }
-            }
-            methodContext.append("\n");
-        }
-        return methodContext;
     }
 
     /**
@@ -150,23 +108,58 @@ public class ServiceGenerateFactory extends ContextGenerateFactory {
                         methodImplContext.append("\t\treturn " + mapperInterfaceLowerName + "."
                                 + method.getMethodName() + "();\n");
                     } else {
-                        /* public List<Pojo> loadAllRecordBuffered(Pojo pojo) {
-                         *    return recordBufferedMapper.loadAllRecordBuffered(Pojo pojo);
+                        /* public Pojo getById(Integer id) {
+                         *    return recordBufferedMapper.getById(Integer id);
+                         *    }
                          */
                         //如果只包含一个条件参数，且该条件参数是主键，则返回结果为对象，不为list
                         if(method.getWhereColumnList().size() == 1
                                 && method.getWhereColumnList().get(0).isPrimaryKey()){
+                            Column column = method.getWhereColumnList().get(0);
+                            String fieldType = column.getFieldType();
+                            String fieldName = column.getFieldName();
+                            //WHERE 条件使用小驼峰命名法获取参数
+                            String lowerCamelFieldName = StringTransverter.lowerCamelCase(fieldName);
+                            String javaType = JavaBeanFactory.getJavaTypeByDataBaseType(fieldType);
                             methodImplContext.append("\tpublic " + beanClassName + " " + method.getMethodName()
-                                    + "(" + beanClassName + " " + beanClassLowerName + "){\n");
+                                    + "(" + javaType + " " + lowerCamelFieldName + "){\n");
+                            methodImplContext.append("\t\treturn " + mapperInterfaceLowerName + "." + method.getMethodName()
+                                    + "(" + lowerCamelFieldName + ");\n");
                         }else{
+                            /* public List<Pojo> loadAllRecordBuffered(Pojo pojo) {
+                         *      return recordBufferedMapper.loadAllRecordBuffered(Pojo pojo);
+                         *      }
+                         */
                             methodImplContext.append("\tpublic " + returnBeanClass + " " + method.getMethodName()
                                     + "(" + beanClassName + " " + beanClassLowerName + "){\n");
+                            methodImplContext.append("\t\treturn " + mapperInterfaceLowerName + "." + method.getMethodName()
+                                    + "(" + beanClassLowerName + ");\n");
                         }
-
-                        methodImplContext.append("\t\treturn " + mapperInterfaceLowerName + "." + method.getMethodName()
-                                + "(" + beanClassLowerName + ");\n");
                     }
-                } else {
+                } else if(methodEnum == MethodEnum.DELETE){
+                    if(method.getWhereColumnList().size() == 1
+                            && method.getWhereColumnList().get(0).isPrimaryKey()){
+                        Column column = method.getWhereColumnList().get(0);
+                        String fieldType = column.getFieldType();
+                        String fieldName = column.getFieldName();
+                        //WHERE 条件使用小驼峰命名法获取参数
+                        String lowerCamelFieldName = StringTransverter.lowerCamelCase(fieldName);
+                        String javaType = JavaBeanFactory.getJavaTypeByDataBaseType(fieldType);
+                         /* public void deleteById(Integer id) {
+                      *         recordBufferedMapper.deleteById(id)
+                      *    }
+                      */
+                        methodImplContext.append("\tpublic " + returnBeanClass + " " + method.getMethodName()
+                                + "(" + javaType + " " + lowerCamelFieldName + "){\n");
+                        methodImplContext.append("\t\t" + mapperInterfaceLowerName + "." + method.getMethodName()
+                                + "(" + lowerCamelFieldName + ");\n");
+                    }else{
+                        methodImplContext.append("\tpublic " + returnBeanClass + " " + method.getMethodName()
+                                + "(" + beanClassName + " " + beanClassLowerName + "){\n");
+                        methodImplContext.append("\t\t" + mapperInterfaceLowerName + "." + method.getMethodName() + "("
+                                + beanClassLowerName + ");\n");
+                    }
+                }else {
                      /* public void loadAllRecordBuffered(Pojo pojo) {
                       *    recordBufferedMapper.loadAllRecordBuffered(Pojo pojo);
                       */

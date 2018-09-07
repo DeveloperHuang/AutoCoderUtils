@@ -12,67 +12,70 @@ import java.util.*;
 /**
  * Created by Joss on 2016/10/26.
  * 目前查询默认返回结果为List
- *
+ * <p>
  * 实现思路：
  * 1：添加方法信息
  * 2：生成Mapper接口信息
- *  2.1：生成SELECT方法（目前只返回集合）
- *  2.2：生成INSERT方法（目前只支持参数对象）
- *  2.3：生成UPDATE方法（目前只支持参数对象）
- *  2.4：生成DELETE方法（目前只支持参数对象）
+ * 2.1：生成SELECT方法（目前只返回集合）
+ * 2.2：生成INSERT方法（目前只支持参数对象）
+ * 2.3：生成UPDATE方法（目前只支持参数对象）
+ * 2.4：生成DELETE方法（目前只支持参数对象）
  * 3：生成Mapper XML信息
- *  3.0：生成paramMap和resultMap
- *  3.1：生成SELECT方法（目前只返回集合）
- *  3.2：生成INSERT方法（目前只支持参数对象）
- *  3.3：生成UPDATE方法（目前只支持参数对象）
- *  3.4：生成DELETE方法（目前只支持参数对象）
+ * 3.0：生成paramMap和resultMap
+ * 3.1：生成SELECT方法（目前只返回集合）
+ * 3.2：生成INSERT方法（目前只支持参数对象）
+ * 3.3：生成UPDATE方法（目前只支持参数对象）
+ * 3.4：生成DELETE方法（目前只支持参数对象）
  */
 public class MapperGenerateFactory extends ContextGenerateFactory {
 
     private static final String XML_HEAD = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<!DOCTYPE mapper PUBLIC \"-//mybatis.org//DTD Mapper 3.0//EN\" \n" +
             "\"http://mybatis.org/dtd/mybatis-3-mapper.dtd\">\n";
-    private static Map<String,String> jdbcTypeMap = new HashMap<String,String>();
+    private static Map<String, String> jdbcTypeMap = new HashMap<String, String>();
+
     static {
-        jdbcTypeMap.put("int","INTEGER");
-        jdbcTypeMap.put("double","DOUBLE");
-        jdbcTypeMap.put("float","FLOAT");
-        jdbcTypeMap.put("varchar","VARCHAR");
-        jdbcTypeMap.put("bigint","BIGINT");
-        jdbcTypeMap.put("text","VARCHAR");
-        jdbcTypeMap.put("char","CHAR");
-        jdbcTypeMap.put("date","DATE");
-        jdbcTypeMap.put("time","DATE");
-        jdbcTypeMap.put("year","INTEGER");
-        jdbcTypeMap.put("datetime","DATE");
-        jdbcTypeMap.put("timestamp","DATE");
-        jdbcTypeMap.put("longtext","VARCHAR");
+        jdbcTypeMap.put("int", "INTEGER");
+        jdbcTypeMap.put("double", "DOUBLE");
+        jdbcTypeMap.put("float", "FLOAT");
+        jdbcTypeMap.put("varchar", "VARCHAR");
+        jdbcTypeMap.put("bigint", "BIGINT");
+        jdbcTypeMap.put("text", "VARCHAR");
+        jdbcTypeMap.put("char", "CHAR");
+        jdbcTypeMap.put("date", "DATE");
+        jdbcTypeMap.put("time", "DATE");
+        jdbcTypeMap.put("year", "INTEGER");
+        jdbcTypeMap.put("datetime", "DATE");
+        jdbcTypeMap.put("timestamp", "DATE");
+        jdbcTypeMap.put("longtext", "VARCHAR");
     }
 
     /**
      * Mapper相关内容生成工厂
+     *
      * @param saveDirectory 保存路径
      * @param interfaceName 接口名称
-     * @param beanFile JavaBean文件
-     * @param beanTable bean对应的Table信息
+     * @param beanFile      JavaBean文件
+     * @param beanTable     bean对应的Table信息
      */
     public MapperGenerateFactory(File saveDirectory, String interfaceName, File beanFile, Table beanTable) {
-        super(saveDirectory,interfaceName,beanFile,beanTable);
+        super(saveDirectory, interfaceName, beanFile, beanTable);
     }
 
 
     /**
      * 获取待生成的接口内容
+     *
      * @return 接口内容字符串
      */
-    public String getInterfaceContext(){
+    public String getInterfaceContext() {
         StringBuffer interfaceContextBuffer = new StringBuffer();
 
         String import_bean = JavaClassContextGenerator.generateImportByFile(beanFile);
         String packageMessage = JavaClassContextGenerator.generatePackageByFile(saveDirectory);
-        String head = packageMessage+"\n\n"+IMPORT_LIST+"\n"+ import_bean+"\n\n";
+        String head = packageMessage + "\n\n" + IMPORT_LIST + "\n" + import_bean + "\n\n";
         interfaceContextBuffer.append(head);
-        interfaceContextBuffer.append("public interface "+interfaceName+" {\n\n");
+        interfaceContextBuffer.append("public interface " + interfaceName + " {\n\n");
         interfaceContextBuffer.append(getInterfaceMethodContext());
         interfaceContextBuffer.append("}");
 
@@ -80,70 +83,27 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
     }
 
     /**
-     * 获取接口方法内容
-     * @return 方法内容字符串
-     */
-    private StringBuffer getInterfaceMethodContext(){
-        StringBuffer methodContext = new StringBuffer();
-        Set<MethodEnum> methodEnumSet = methodInfoListMap.keySet();
-        String beanClassName = JavaClassContextGenerator.getClassName(beanFile);
-        String beanClassLowerName = StringTransverter.initialLowerCaseTransvert(beanClassName);
-        for(MethodEnum methodEnum : methodEnumSet){
-            List<Method> methodList = methodInfoListMap.get(methodEnum);
-            String returnBeanClass = null;
-            switch (methodEnum){
-                case SELECT:
-                    returnBeanClass = "List<"+beanClassName+">";
-                    break;
-                default:
-                    returnBeanClass = "void";
-                    break;
-            }
-            for(Method method : methodList){
-                if(methodEnum == MethodEnum.SELECT &&
-                        (method.getWhereColumnList() == null || method.getWhereColumnList().size() == 0)){
-
-                    methodContext.append("\tpublic "+returnBeanClass+" "+ method.getMethodName()+"();\n");
-                }else{
-                    //如果只包含一个条件参数，且该条件参数是主键，则返回结果为对象，不为list
-                    if(method.getWhereColumnList().size() == 1
-                            && method.getWhereColumnList().get(0).isPrimaryKey()){
-                        methodContext.append("\tpublic "+beanClassName+" "+ method.getMethodName()
-                                +"("+beanClassName+" "+ beanClassLowerName +");\n");
-                    }else{
-                        methodContext.append("\tpublic "+returnBeanClass+" "+ method.getMethodName()
-                                +"("+beanClassName+" "+ beanClassLowerName +");\n");
-                    }
-
-                }
-            }
-            methodContext.append("\n");
-        }
-        return methodContext;
-    }
-
-
-
-    /**
      * 获取实现的内容
+     *
      * @return 内容字符串
      */
     @Override
-    public String getImplementsContext(){
+    public String getImplementsContext() {
         return getXMLContext();
     }
 
     /**
      * 获取MyBatis的的XML内容
+     *
      * @return 内容字符串
      */
     public String getXMLContext() {
         StringBuffer xmlContext = new StringBuffer();
 
         xmlContext.append(XML_HEAD);
-        String packageContext = JavaClassContextGenerator.generatePackageUrlByFile(saveDirectory)+"."
-                +interfaceName;
-        xmlContext.append("<mapper namespace=\""+packageContext+"\">\n\n");
+        String packageContext = JavaClassContextGenerator.generatePackageUrlByFile(saveDirectory) + "."
+                + interfaceName;
+        xmlContext.append("<mapper namespace=\"" + packageContext + "\">\n\n");
 
 //          1:resultMap
         xmlContext.append(getResultMap());
@@ -168,62 +128,62 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
         return xmlContext.toString();
     }
 
-    private StringBuffer getResultMap(){
+    private StringBuffer getResultMap() {
         StringBuffer resultMapContext = new StringBuffer();
-        String packageContext = JavaClassContextGenerator.generatePackageUrlByFile(beanFile)+"."+ JavaClassContextGenerator.getClassName(beanFile);
-        resultMapContext.append("\t<resultMap type=\""+packageContext+"\"\n" +
-                "\t\tid=\""+getResultMapId()+"\">\n");
+        String packageContext = JavaClassContextGenerator.generatePackageUrlByFile(beanFile) + "." + JavaClassContextGenerator.getClassName(beanFile);
+        resultMapContext.append("\t<resultMap type=\"" + packageContext + "\"\n" +
+                "\t\tid=\"" + getResultMapId() + "\">\n");
         List<Column> columnList = beanTable.getColumns();
-        for(Column column : columnList){
+        for (Column column : columnList) {
             String lowerCamelFieldName = StringTransverter.lowerCamelCase(column.getFieldName());
-            resultMapContext.append("\t\t<result property=\""+lowerCamelFieldName+"\" column=\""+column.getFieldName()+"\"/>\n");
+            resultMapContext.append("\t\t<result property=\"" + lowerCamelFieldName + "\" column=\"" + column.getFieldName() + "\"/>\n");
         }
         resultMapContext.append("\t</resultMap>\n");
         return resultMapContext;
     }
 
-    private StringBuffer getParameterMapContext(){
+    private StringBuffer getParameterMapContext() {
         StringBuffer parameterMapContext = new StringBuffer();
 
-        String packageContext = JavaClassContextGenerator.generatePackageUrlByFile(beanFile)+"."+ JavaClassContextGenerator.getClassName(beanFile);
-        parameterMapContext.append("\t<parameterMap id=\""+getParameterMapId()+"\"\n" +
-                "\t\ttype=\""+packageContext+"\">\n");
+        String packageContext = JavaClassContextGenerator.generatePackageUrlByFile(beanFile) + "." + JavaClassContextGenerator.getClassName(beanFile);
+        parameterMapContext.append("\t<parameterMap id=\"" + getParameterMapId() + "\"\n" +
+                "\t\ttype=\"" + packageContext + "\">\n");
         List<Column> columnList = beanTable.getColumns();
-        for(Column column : columnList){
+        for (Column column : columnList) {
             String jdbcType = jdbcTypeMap.get(column.getFieldType());
             String lowerCamelFieldName = StringTransverter.lowerCamelCase(column.getFieldName());
-            parameterMapContext.append("\t\t<parameter property=\""+lowerCamelFieldName
-                    +"\" jdbcType=\""+jdbcType+"\" />\n");
+            parameterMapContext.append("\t\t<parameter property=\"" + lowerCamelFieldName
+                    + "\" jdbcType=\"" + jdbcType + "\" />\n");
         }
         parameterMapContext.append("\t</parameterMap>\n");
         return parameterMapContext;
     }
 
-    private String getParameterMapId(){
-        String paramMapId = JavaClassContextGenerator.getLowerClassName(beanFile)+"Param";
+    private String getParameterMapId() {
+        String paramMapId = JavaClassContextGenerator.getLowerClassName(beanFile) + "Param";
         return paramMapId;
     }
 
-    private String getResultMapId(){
-        String resultMapId = JavaClassContextGenerator.getLowerClassName(beanFile)+"Result";
+    private String getResultMapId() {
+        String resultMapId = JavaClassContextGenerator.getLowerClassName(beanFile) + "Result";
         return resultMapId;
     }
 
-    private StringBuffer getSelectMethodContext(){
+    private StringBuffer getSelectMethodContext() {
         StringBuffer selectMethodContext = new StringBuffer();
         List<Method> methodList = methodInfoListMap.get(MethodEnum.SELECT);
-        if(methodList != null && methodList.size() > 0){
-            for(Method method : methodList){
+        if (methodList != null && methodList.size() > 0) {
+            for (Method method : methodList) {
 
                 List<Column> paramColumnList = method.getParamColumnList();
-                if(paramColumnList == null || paramColumnList.size() == 0){
+                if (paramColumnList == null || paramColumnList.size() == 0) {
                     continue;
                 }
                 //***************构造SELECT内容******************
                 StringBuffer paramBuffer = new StringBuffer();
-                for(int i = 0 ; i < paramColumnList.size() ; i++){
+                for (int i = 0; i < paramColumnList.size(); i++) {
                     paramBuffer.append(paramColumnList.get(i).getFieldName());
-                    if(i != paramColumnList.size()-1){
+                    if (i != paramColumnList.size() - 1) {
                         paramBuffer.append(",");
                     }
                 }
@@ -233,13 +193,13 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
                 StringBuffer whereSQLContext = getWhereIFSQLContext(whereColumnList);
                 //***************构造WHERE内容完毕******************
                 String paramMap = "";
-                if(method.getWhereColumnList() != null && method.getWhereColumnList().size() > 0){
-                    paramMap = " parameterMap=\""+getParameterMapId()+"\"";
+                if (method.getWhereColumnList() != null && method.getWhereColumnList().size() > 0) {
+                    paramMap = " parameterMap=\"" + getParameterMapId() + "\"";
                 }
-                selectMethodContext.append("\t<select id=\""+ method.getMethodName()+"\" resultMap=\""+getResultMapId()+"\""
-                +paramMap+">\n");
-                selectMethodContext.append("\t\tSELECT "+paramBuffer.toString()+"\n");
-                selectMethodContext.append("\t\tFROM "+beanTable.getTableName()+"\n");
+                selectMethodContext.append("\t<select id=\"" + method.getMethodName() + "\" resultMap=\"" + getResultMapId() + "\""
+                        + paramMap + ">\n");
+                selectMethodContext.append("\t\tSELECT " + paramBuffer.toString() + "\n");
+                selectMethodContext.append("\t\tFROM " + beanTable.getTableName() + "\n");
                 selectMethodContext.append(whereSQLContext);
                 selectMethodContext.append("\t</select>\n");
             }
@@ -247,13 +207,13 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
         return selectMethodContext;
     }
 
-    private StringBuffer getInsertMethodContext(){
+    private StringBuffer getInsertMethodContext() {
         StringBuffer insertMethodContext = new StringBuffer();
         List<Method> methodList = methodInfoListMap.get(MethodEnum.INSERT);
-        if(methodList != null && methodList.size() > 0){
-            for(Method method : methodList){
+        if (methodList != null && methodList.size() > 0) {
+            for (Method method : methodList) {
                 List<Column> paramColumnList = method.getParamColumnList();
-                if(paramColumnList == null || paramColumnList.size() == 0){
+                if (paramColumnList == null || paramColumnList.size() == 0) {
                     continue;
                 }
                 StringBuffer columnBuffer = new StringBuffer();
@@ -263,37 +223,37 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
                     String columnName = paramColumnList.get(i).getFieldName();
                     String lowerCamelFieldName = StringTransverter.lowerCamelCase(columnName);
                     columnBuffer.append(columnName);
-                    propertyBuffer.append("#{"+lowerCamelFieldName+"}");
+                    propertyBuffer.append("#{" + lowerCamelFieldName + "}");
                     if (i != paramColumnList.size() - 1) {
                         columnBuffer.append(",");
                         propertyBuffer.append(",");
                     }
                 }
-                insertMethodContext.append("\t<insert id=\""+ method.getMethodName()+"\" parameterMap=\""+getParameterMapId()+"\">\n");
-                insertMethodContext.append("\t\tINSERT INTO "+beanTable.getTableName()+"("+columnBuffer.toString()+")\n");
-                insertMethodContext.append("\t\tVALUES("+propertyBuffer.toString()+")\n");
+                insertMethodContext.append("\t<insert id=\"" + method.getMethodName() + "\" parameterMap=\"" + getParameterMapId() + "\">\n");
+                insertMethodContext.append("\t\tINSERT INTO " + beanTable.getTableName() + "(" + columnBuffer.toString() + ")\n");
+                insertMethodContext.append("\t\tVALUES(" + propertyBuffer.toString() + ")\n");
                 insertMethodContext.append("\t</insert>\n");
             }
         }
         return insertMethodContext;
     }
 
-    private StringBuffer getUpdateMethodContext(){
+    private StringBuffer getUpdateMethodContext() {
         StringBuffer updateMethodContext = new StringBuffer();
         List<Method> methodList = methodInfoListMap.get(MethodEnum.UPDATE);
-        if(methodList != null && methodList.size() > 0){
-            for(Method method : methodList){
+        if (methodList != null && methodList.size() > 0) {
+            for (Method method : methodList) {
                 List<Column> paramColumnList = method.getParamColumnList();
-                if(paramColumnList == null || paramColumnList.size() == 0){
+                if (paramColumnList == null || paramColumnList.size() == 0) {
                     continue;
                 }
                 //******************构建设置参数********************
                 StringBuffer paramBuffer = new StringBuffer();
-                for(int i = 0 ; i < paramColumnList.size() ; i++){
+                for (int i = 0; i < paramColumnList.size(); i++) {
                     String fieldName = paramColumnList.get(i).getFieldName();
                     String lowerCamelFieldName = StringTransverter.lowerCamelCase(fieldName);
-                    paramBuffer.append(""+fieldName+" = #{"+lowerCamelFieldName+"}");
-                    if(i != paramColumnList.size()-1){
+                    paramBuffer.append("" + fieldName + " = #{" + lowerCamelFieldName + "}");
+                    if (i != paramColumnList.size() - 1) {
                         paramBuffer.append(",");
                     }
                 }
@@ -301,9 +261,9 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
                 List<Column> whereColumnList = method.getWhereColumnList();
                 StringBuffer whereSQLContext = getWhereSQLContext(whereColumnList);
                 //******************组装********************
-                updateMethodContext.append("\t<update id=\""+ method.getMethodName()+"\" parameterMap=\""+getParameterMapId()+"\">\n");
-                updateMethodContext.append("\t\tUPDATE "+beanTable.getTableName()+"\n");
-                updateMethodContext.append("\t\tSET "+paramBuffer.toString()+"\n");
+                updateMethodContext.append("\t<update id=\"" + method.getMethodName() + "\" parameterMap=\"" + getParameterMapId() + "\">\n");
+                updateMethodContext.append("\t\tUPDATE " + beanTable.getTableName() + "\n");
+                updateMethodContext.append("\t\tSET " + paramBuffer.toString() + "\n");
                 updateMethodContext.append(whereSQLContext);
                 updateMethodContext.append("\t</update>\n");
             }
@@ -311,15 +271,15 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
         return updateMethodContext;
     }
 
-    private StringBuffer getDeleteMethodContext(){
+    private StringBuffer getDeleteMethodContext() {
         StringBuffer deleteMethodContext = new StringBuffer();
         List<Method> methodList = methodInfoListMap.get(MethodEnum.DELETE);
-        if(methodList != null && methodList.size() > 0){
-            for(Method method : methodList){
+        if (methodList != null && methodList.size() > 0) {
+            for (Method method : methodList) {
                 List<Column> whereColumnList = method.getWhereColumnList();
                 StringBuffer whereSQLContext = getWhereSQLContext(whereColumnList);
-                deleteMethodContext.append("\t<delete id=\""+ method.getMethodName()+"\" parameterMap=\""+getParameterMapId()+"\">\n");
-                deleteMethodContext.append("\t\tDELETE FROM "+beanTable.getTableName()+"\n");
+                deleteMethodContext.append("\t<delete id=\"" + method.getMethodName() + "\" parameterMap=\"" + getParameterMapId() + "\">\n");
+                deleteMethodContext.append("\t\tDELETE FROM " + beanTable.getTableName() + "\n");
                 deleteMethodContext.append(whereSQLContext);
                 deleteMethodContext.append("\t</delete>\n");
             }
@@ -329,9 +289,9 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
 
     private StringBuffer getWhereIFSQLContext(List<Column> whereColumnList) {
         StringBuffer whereBuffer = new StringBuffer();
-        if(whereColumnList != null && whereColumnList.size() > 0){
+        if (whereColumnList != null && whereColumnList.size() > 0) {
             whereBuffer.append("\t\t<where>\n ");
-            for(int i = 0 ; i < whereColumnList.size() ; i++){
+            for (int i = 0; i < whereColumnList.size(); i++) {
                 String fieldName = whereColumnList.get(i).getFieldName();
                 String lowerCamelFieldName = StringTransverter.lowerCamelCase(fieldName);
                 //<if test="id != null and id != ''">
@@ -356,13 +316,13 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
 
     private StringBuffer getWhereSQLContext(List<Column> whereColumnList) {
         StringBuffer whereBuffer = new StringBuffer();
-        if(whereColumnList != null && whereColumnList.size() > 0){
+        if (whereColumnList != null && whereColumnList.size() > 0) {
             whereBuffer.append("\t\tWHERE ");
-            for(int i = 0 ; i < whereColumnList.size() ; i++){
+            for (int i = 0; i < whereColumnList.size(); i++) {
                 String fieldName = whereColumnList.get(i).getFieldName();
                 String lowerCamelFieldName = StringTransverter.lowerCamelCase(fieldName);
-                whereBuffer.append(fieldName+" = #{"+lowerCamelFieldName+"}");
-                if(i != whereColumnList.size()-1){
+                whereBuffer.append(fieldName + " = #{" + lowerCamelFieldName + "}");
+                if (i != whereColumnList.size() - 1) {
                     whereBuffer.append(" AND ");
                 }
             }
