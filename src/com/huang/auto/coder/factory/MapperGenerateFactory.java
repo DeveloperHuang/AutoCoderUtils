@@ -289,28 +289,35 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
 
     private StringBuffer getWhereIFSQLContext(List<Column> whereColumnList) {
         StringBuffer whereBuffer = new StringBuffer();
-        if (whereColumnList != null && whereColumnList.size() > 0) {
-            whereBuffer.append("\t\t<where>\n ");
-            for (int i = 0; i < whereColumnList.size(); i++) {
-                String fieldName = whereColumnList.get(i).getFieldName();
+        if (whereColumnList != null ) {
+            if(whereColumnList.size() == 1 && whereColumnList.get(0).isPrimaryKey()){
+                whereBuffer.append("\t\tWHERE ");
+                String fieldName = whereColumnList.get(0).getFieldName();
                 String lowerCamelFieldName = StringTransverter.lowerCamelCase(fieldName);
-                //<if test="id != null and id != ''">
-                whereBuffer.append("\t\t\t<if test=\"")
-                        .append(lowerCamelFieldName)
-                        .append(" != null and ")
-                        .append(lowerCamelFieldName)
-                        .append(" != ''\">\n");
-                //AND id = #{id}
-                whereBuffer.append("\t\t\t\tAND ")
-                        .append(fieldName).
-                        append(" = #{").
-                        append(lowerCamelFieldName).
-                        append("}\n");
-                whereBuffer.append("\t\t\t</if>\n");
+                whereBuffer.append(fieldName + " = #{" + lowerCamelFieldName + "}");
+                whereBuffer.append("\n");
+            }else if(whereColumnList.size() > 0){
+                whereBuffer.append("\t\t<where>\n ");
+                for (int i = 0; i < whereColumnList.size(); i++) {
+                    String fieldName = whereColumnList.get(i).getFieldName();
+                    String lowerCamelFieldName = StringTransverter.lowerCamelCase(fieldName);
+                    //<if test="id != null and id != ''">
+                    whereBuffer.append("\t\t\t<if test=\"")
+                            .append(lowerCamelFieldName)
+                            .append(" != null and ")
+                            .append(lowerCamelFieldName)
+                            .append(" != ''\">\n");
+                    //AND id = #{id}
+                    whereBuffer.append("\t\t\t\tAND ")
+                            .append(fieldName).
+                            append(" = #{").
+                            append(lowerCamelFieldName).
+                            append("}\n");
+                    whereBuffer.append("\t\t\t</if>\n");
+                }
+                whereBuffer.append("\t\t</where>\n");
             }
-            whereBuffer.append("\t\t</where>\n");
         }
-
         return whereBuffer;
     }
 
