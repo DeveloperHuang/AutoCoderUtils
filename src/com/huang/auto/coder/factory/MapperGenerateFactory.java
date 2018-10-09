@@ -108,8 +108,8 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
 //          1:resultMap
         xmlContext.append(getResultMap());
         xmlContext.append("\n");
-//          2:parameterMap
-        xmlContext.append(getParameterMapContext());
+//          2:SelectSQL
+        xmlContext.append(getSelectSQLContext());
         xmlContext.append("\n");
 //          3:SELECT
         xmlContext.append(getSelectMethodContext());
@@ -140,6 +140,24 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
         }
         resultMapContext.append("\t</resultMap>\n");
         return resultMapContext;
+    }
+
+    private StringBuffer getSelectSQLContext() {
+        StringBuffer selectSQLContext = new StringBuffer();
+
+        selectSQLContext.append("\t<sql id=\"selectSQL\">\n");
+        List<Column> columnList = beanTable.getColumns();
+        for (int i = 0 ; i < columnList.size() ; i++) {
+            Column column = columnList.get(i);
+            String fieldName = column.getFieldName();
+            selectSQLContext.append("\t\t"+fieldName);
+            if(i != columnList.size()-1){
+                selectSQLContext.append(",");
+            }
+            selectSQLContext.append("\n");
+        }
+        selectSQLContext.append("\t</sql>\n");
+        return selectSQLContext;
     }
 
     private StringBuffer getParameterMapContext() {
@@ -197,8 +215,9 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
                     paramMap = " parameterMap=\"" + getParameterMapId() + "\"";
                 }
                 selectMethodContext.append("\t<select id=\"" + method.getMethodName() + "\" resultMap=\"" + getResultMapId() + "\""
-                        + paramMap + ">\n");
-                selectMethodContext.append("\t\tSELECT " + paramBuffer.toString() + "\n");
+                         + ">\n");
+                selectMethodContext.append("\t\tSELECT\n");
+                selectMethodContext.append("\t\t<include refid=\"selectSQL\"/>\n");
                 selectMethodContext.append("\t\tFROM " + beanTable.getTableName() + "\n");
                 selectMethodContext.append(whereSQLContext);
                 selectMethodContext.append("\t</select>\n");
@@ -229,7 +248,7 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
                         propertyBuffer.append(",");
                     }
                 }
-                insertMethodContext.append("\t<insert id=\"" + method.getMethodName() + "\" parameterMap=\"" + getParameterMapId() + "\">\n");
+                insertMethodContext.append("\t<insert id=\"" + method.getMethodName() + "\" >\n");
                 insertMethodContext.append("\t\tINSERT INTO " + beanTable.getTableName() + "(" + columnBuffer.toString() + ")\n");
                 insertMethodContext.append("\t\tVALUES(" + propertyBuffer.toString() + ")\n");
                 insertMethodContext.append("\t</insert>\n");
@@ -261,7 +280,7 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
                 List<Column> whereColumnList = method.getWhereColumnList();
                 StringBuffer whereSQLContext = getWhereSQLContext(whereColumnList);
                 //******************组装********************
-                updateMethodContext.append("\t<update id=\"" + method.getMethodName() + "\" parameterMap=\"" + getParameterMapId() + "\">\n");
+                updateMethodContext.append("\t<update id=\"" + method.getMethodName() + "\">\n");
                 updateMethodContext.append("\t\tUPDATE " + beanTable.getTableName() + "\n");
                 updateMethodContext.append("\t\tSET " + paramBuffer.toString() + "\n");
                 updateMethodContext.append(whereSQLContext);
@@ -278,7 +297,7 @@ public class MapperGenerateFactory extends ContextGenerateFactory {
             for (Method method : methodList) {
                 List<Column> whereColumnList = method.getWhereColumnList();
                 StringBuffer whereSQLContext = getWhereSQLContext(whereColumnList);
-                deleteMethodContext.append("\t<delete id=\"" + method.getMethodName() + "\" parameterMap=\"" + getParameterMapId() + "\">\n");
+                deleteMethodContext.append("\t<delete id=\"" + method.getMethodName() + "\">\n");
                 deleteMethodContext.append("\t\tDELETE FROM " + beanTable.getTableName() + "\n");
                 deleteMethodContext.append(whereSQLContext);
                 deleteMethodContext.append("\t</delete>\n");

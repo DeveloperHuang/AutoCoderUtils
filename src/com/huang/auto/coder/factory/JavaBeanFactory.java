@@ -32,6 +32,7 @@ public class JavaBeanFactory {
         reflectTypeMap.put("datetime","String");
         reflectTypeMap.put("timestamp","Date");
         reflectTypeMap.put("longtext","String");
+        reflectTypeMap.put("decimal","BigDecimal");
     }
 
 
@@ -53,11 +54,16 @@ public class JavaBeanFactory {
         List<Column> columnList = table.getColumns();
         if(columnList != null){
             boolean alreadyAddDateImport = false;
+            boolean alreadyAddBigDecimalImport = false;
             for(Column column : columnList){
                 String javaType = getJavaTypeByDataBaseType(column.getFieldType());
                 if(!alreadyAddDateImport && "Date".equals(javaType)){
                     head.append("import java.util.Date;\n");
                     alreadyAddDateImport = true;
+                }
+                if(!alreadyAddBigDecimalImport && "BigDecimal".equals(javaType)){
+                    head.append("import java.math.BigDecimal;\n");
+                    alreadyAddBigDecimalImport = true;
                 }
                 String fieldName = StringTransverter.lowerCamelCase(column.getFieldName());
                 methodMessage.append(generateBeanMethodString(fieldName,javaType));
