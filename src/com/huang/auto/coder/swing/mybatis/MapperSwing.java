@@ -423,6 +423,9 @@ public class MapperSwing {
                     columnMap.put(column.getFieldName(),column.getFieldType());
                 }
                 clearMethodManager();
+
+                String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Mapper";
+                mapperClassNameTextField.setText(className);
                 //TODO 如果存在上次的Bean目录，则搜索该目录的Bean文件
 //                setBeanFilePathFieldText(tableName+".java");
             }
@@ -451,10 +454,7 @@ public class MapperSwing {
                 mapperSaveDirector = file;
                 mapperSaveLocalTextField.setText(mapperSaveDirector.getPath());
                 if(chooseTableComboBox.getSelectedIndex() >= 0){
-                    String tableName = (String) chooseTableComboBox.getSelectedItem();
-                    String className = StringTransverter.initialUpperCaseTransvert(tableName)+"Mapper";
                     String packageMessage = JavaClassContextGenerator.generatePackageByFile(mapperSaveDirector);
-                    mapperClassNameTextField.setText(className);
                     mapperPackageTextField.setText(packageMessage);
                 }
             }

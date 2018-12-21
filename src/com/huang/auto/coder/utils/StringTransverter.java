@@ -36,7 +36,7 @@ public class StringTransverter {
             result = "";
         }
 
-        return result;
+        return lowerCamelCase(result);
     }
 
     public static String initialLowerCaseTransvert(String baseName){

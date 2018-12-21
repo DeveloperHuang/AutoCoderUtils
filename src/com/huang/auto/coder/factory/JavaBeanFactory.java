@@ -26,10 +26,10 @@ public class JavaBeanFactory {
         reflectTypeMap.put("bigint","Long");
         reflectTypeMap.put("text","String");
         reflectTypeMap.put("char","String");
-        reflectTypeMap.put("date","String");
+        reflectTypeMap.put("date","Date");
         reflectTypeMap.put("time","Date");
         reflectTypeMap.put("year","Integer");
-        reflectTypeMap.put("datetime","String");
+        reflectTypeMap.put("datetime","Date");
         reflectTypeMap.put("timestamp","Date");
         reflectTypeMap.put("longtext","String");
         reflectTypeMap.put("decimal","BigDecimal");
